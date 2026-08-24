@@ -13,6 +13,15 @@ Modern, mobile-responsive Candidate Tracking & Recruitment Management System wit
 
 ---
 
+## 🛡️ Data Privacy & GitHub Zero-PII Protection
+
+This project enforces strict privacy masking rules for public & team repository safety:
+- **No Real PII in Git**: Real candidate resumes (`.pdf`, `.docx`), personal phone numbers, and actual emails are ignored by `.gitignore` and kept in `local_private_backup/`.
+- **Sanitized Datasets**: Tracked spreadsheets (`candidates_tracker.xlsx`, `Followup_Tracket.xlsx`) strictly use synthetic mock candidate data (`@example.com`, `+91 98765 0000X`).
+- **Standardized Sanitizer Skill**: Follows the `git-privacy-sanitizer` Antigravity skill before every commit and push.
+
+---
+
 ## 🧪 Testing Guidelines & Playwright Verification
 
 Detailed step-by-step instructions and test sequences are documented in:
