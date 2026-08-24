@@ -1,0 +1,47 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments, credentials & private backups
+.env
+*.env
+.secure_config.bin
+local_private_backup/
+private_data/
+.venv/
+venv/
+env/
+ENV/
+
+# Candidate raw resumes and proprietary data reports
+resumes/
+Resume-Search-Script/candidate_data/
+**/candidate_data/
+*.pdf
+*.docx
+
+# Build and packaging output
+build/
+dist/
+Candidate_Sourcing_App/
+*.egg-info/
+.eggs/
+
+# Browser profiles and sessions
+browser_profile/
+.playwright/
+playwright-report/
+test-results/
+
+# Test screenshots and cache
+.pytest_cache/
+candidate_app/test_screenshots/
+
+# Backups & temporary logs
+backups/
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

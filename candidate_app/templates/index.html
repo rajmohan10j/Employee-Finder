@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CandidateTracker">
+    <title>Candidate Tracker - Master Database & Review</title>
+    <!-- Icons & PWA Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="manifest" href="/static/manifest.json">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Local Self-Hosted FontAwesome (Guaranteed to render offline/LAN on mobile & desktop) -->
+    <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
+    <!-- Local Pure JS QR Code Library -->
+    <script src="/static/vendor/qrcode.min.js"></script>
+</head>
+<body class="dark-theme">
+    <div class="app-layout">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-users-viewfinder"></i>
+                </div>
+                <div class="brand-info">
+                    <span class="brand-title">CandidateTracker</span>
+                    <span class="brand-subtitle">Master Excel Sync</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="candidates" id="nav-candidates">
+                    <i class="fa-solid fa-address-book"></i>
+                    <span>Candidates Tracker</span>
+                    <span class="badge" id="badge-total-candidates">0</span>
+                </button>
+                <button class="nav-item" data-tab="reviews" id="nav-reviews">
+                    <i class="fa-solid fa-code-pull-request"></i>
+                    <span>Review & Commit</span>
+                    <span class="badge badge-warning" id="badge-pending-reviews">0</span>
+                </button>
+                <button class="nav-item" data-tab="reviewers" id="nav-reviewers">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Reviewer Contacts</span>
+                </button>
+                <button class="nav-item" data-tab="mobile" id="nav-mobile">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>Connect Mobile / QR</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="server-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Excel Master Live</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <button class="btn btn-primary btn-sm w-full" id="btn-sidebar-import">
+                        <i class="fa-solid fa-file-import"></i> Import XLSX File
+                    </button>
+                    <button class="btn btn-outline btn-sm w-full" id="btn-export-excel">
+                        <i class="fa-solid fa-file-excel"></i> Export Excel
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 class="page-title" id="page-title">Candidate Master Tracker</h1>
+                    <p class="page-subtitle" id="page-subtitle">Real-time box item editor and master database synchronization</p>
+                </div>
+                <div class="header-actions">
+                    <div class="size-controls" title="Adjust text and box size for Android/Desktop">
+                        <button class="btn btn-secondary btn-icon btn-sm" id="btn-size-down" title="Reduce Size (A-)">
+                            <span style="font-size:12px; font-weight:700;">A-</span>
+                        </button>
+                        <button class="btn btn-secondary btn-icon btn-sm" id="btn-size-reset" title="Reset Size">
+                            <span style="font-size:12px; font-weight:700;">100%</span>
+                        </button>
+                        <button class="btn btn-secondary btn-icon btn-sm" id="btn-size-up" title="Increase Size (A+)">
+                            <span style="font-size:14px; font-weight:700;">A+</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary btn-icon" id="btn-theme-toggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-icon" id="btn-refresh" title="Refresh Data">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-header-import">
+                        <i class="fa-solid fa-file-import"></i>
+                        <span class="btn-text">Import XLSX</span>
+                    </button>
+                    <button class="btn btn-primary" id="btn-add-candidate">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span class="btn-text">Add Candidate</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Metric Cards -->
+            <section class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon metric-purple">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Total Sourced</span>
+                        <span class="metric-value" id="stat-total">--</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon metric-green">
+                        <i class="fa-solid fa-phone-volume"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">HR Called</span>
+                        <span class="metric-value" id="stat-called">--</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon metric-amber">
+                        <i class="fa-solid fa-phone-slash"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Pending Call</span>
+                        <span class="metric-value" id="stat-pending-call">--</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon metric-cyan">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Follow-ups</span>
+                        <span class="metric-value" id="stat-followups">--</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon metric-rose">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Pending Reviews</span>
+                        <span class="metric-value" id="stat-reviews">--</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 1: Candidates View -->
+            <section class="tab-panel active" id="tab-candidates">
+                <!-- Search & Filters -->
+                <div class="toolbar-card">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-input" placeholder="Search candidate by name, phone, email, location, remarks..." autocomplete="off">
+                        <button class="clear-btn" id="btn-clear-search" style="display:none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="filter-group">
+                        <div class="select-wrapper">
+                            <i class="fa-solid fa-phone-flip select-icon"></i>
+                            <select id="filter-status">
+                                <option value="All">Call Status: All</option>
+                                <option value="called">Called (Yes)</option>
+                                <option value="pending">Pending / No</option>
+                            </select>
+                        </div>
+                        <div class="select-wrapper">
+                            <i class="fa-solid fa-globe select-icon"></i>
+                            <select id="filter-portal">
+                                <option value="All">Portal: All</option>
+                                <option value="Naukri">Naukri.com</option>
+                                <option value="Indeed">Indeed India</option>
+                                <option value="Google">Google / Web</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-outline btn-sm" id="btn-toolbar-import">
+                            <i class="fa-solid fa-file-import"></i> Import XLSX
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Candidates List / Grid -->
+                <div class="candidates-container">
+                    <div class="candidates-header-info">
+                        <span id="results-count-text">Showing candidates...</span>
+                    </div>
+                    <div class="candidates-grid" id="candidates-list">
+                        <!-- Dynamic candidate cards inserted via JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Review & Commit Stage -->
+            <section class="tab-panel" id="tab-reviews">
+                <div class="panel-header">
+                    <div>
+                        <h2>Pending Changes & Review Stage</h2>
+                        <p class="text-muted">Review candidate updates submitted by users before committing to the Excel Master database.</p>
+                    </div>
+                </div>
+                <div class="reviews-list" id="reviews-list">
+                    <!-- Dynamic review items inserted via JavaScript -->
+                </div>
+            </section>
+
+            <!-- TAB 3: Reviewer Contacts -->
+            <section class="tab-panel" id="tab-reviewers">
+                <div class="panel-header-action">
+                    <div>
+                        <h2>Authorized Reviewers & Contact List</h2>
+                        <p class="text-muted">Users, Team Leads and Managers authorized to review, modify, and commit changes.</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-add-reviewer">
+                        <i class="fa-solid fa-user-plus"></i> Add Reviewer
+                    </button>
+                </div>
+                <div class="reviewers-grid" id="reviewers-list">
+                    <!-- Dynamic reviewers inserted via JavaScript -->
+                </div>
+            </section>
+
+            <!-- TAB 4: Connect Android Mobile -->
+            <section class="tab-panel" id="tab-mobile">
+                <div class="mobile-connect-card">
+                    <div class="mobile-connect-header">
+                        <div class="mobile-icon-circle">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                        <h2>Connect & Use on Android Phone</h2>
+                        <p class="text-muted">Scan the QR code with your Android camera or browser to instantly use the Candidate Tracker on your mobile phone on the same Wi-Fi network!</p>
+                    </div>
+
+                    <div class="qr-section">
+                        <div id="qrcode-container" class="qrcode-wrapper"></div>
+                        <div class="qr-info">
+                            <label class="info-label">Direct Mobile URL:</label>
+                            <div class="copy-url-box">
+                                <input type="text" id="mobile-url-input" readonly value="Detecting IP...">
+                                <button class="btn btn-secondary btn-sm" id="btn-copy-url">
+                                    <i class="fa-solid fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <div class="connection-tips">
+                                <h4><i class="fa-solid fa-circle-check"></i> Android Ready Features:</h4>
+                                <ul>
+                                    <li><strong>1-Tap Phone Call</strong> & <strong>WhatsApp Message</strong> buttons for every candidate.</li>
+                                    <li><strong>Box Item Editor</strong> optimized for touch screens.</li>
+                                    <li><strong>Install as App</strong>: Tap 'Add to Home Screen' in Chrome on Android.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Mobile Bottom Navigation Bar (Android & Mobile view) -->
+        <nav class="bottom-nav">
+            <button class="bottom-nav-item active" data-tab="candidates">
+                <i class="fa-solid fa-address-book"></i>
+                <span>Candidates</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="reviews">
+                <i class="fa-solid fa-code-pull-request"></i>
+                <span>Reviews</span>
+                <span class="nav-dot" id="dot-pending-reviews" style="display:none;"></span>
+            </button>
+            <button class="bottom-nav-item" data-tab="reviewers">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Reviewers</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="mobile">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>QR Connect</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MODAL 1: Candidate Box Item Form Editor -->
+    <div class="modal-overlay" id="modal-candidate-form" style="display:none;">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-id-card"></i>
+                    <h3 id="form-modal-title">Candidate Details (Box Items)</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-candidate-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="candidate-form">
+                    <input type="hidden" id="field-row-id" value="">
+
+                    <!-- Section 1: Candidate Identity & Sourcing -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-user-tag"></i> Identity & Portal Sourcing
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item box-span-2">
+                            <label for="field-candidate-name"><i class="fa-solid fa-user"></i> Candidate Name / Role Title *</label>
+                            <input type="text" id="field-candidate-name" required placeholder="e.g. John Doe - AI Engineer">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-portal-source"><i class="fa-solid fa-earth-americas"></i> Portal Source</label>
+                            <input type="text" id="field-portal-source" placeholder="e.g. Naukri.com, Indeed, LinkedIn" list="portal-options">
+                            <datalist id="portal-options">
+                                <option value="Naukri.com">
+                                <option value="Indeed India">
+                                <option value="LinkedIn">
+                                <option value="Google / Web Search">
+                            </datalist>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-open-to-work"><i class="fa-solid fa-briefcase"></i> Open To Work / Active</label>
+                            <select id="field-open-to-work">
+                                <option value="Actively Looking">Actively Looking</option>
+                                <option value="Yes">Yes</option>
+                                <option value="Serving Notice">Serving Notice</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Contact & Quick Actions -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-address-card"></i> Contact & Location
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-phone"><i class="fa-solid fa-phone"></i> Phone Number</label>
+                            <div class="input-with-actions">
+                                <input type="text" id="field-phone" placeholder="e.g. +91 98765 43210">
+                                <div class="quick-contact-btns">
+                                    <button type="button" class="action-btn call" id="btn-quick-call" title="Call directly">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </button>
+                                    <button type="button" class="action-btn whatsapp" id="btn-quick-wa" title="WhatsApp message">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                            <div class="input-with-actions">
+                                <input type="email" id="field-email" placeholder="e.g. candidate@example.com">
+                                <div class="quick-contact-btns">
+                                    <button type="button" class="action-btn email" id="btn-quick-email" title="Compose email">
+                                        <i class="fa-solid fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-location"><i class="fa-solid fa-location-dot"></i> Location</label>
+                            <input type="text" id="field-location" placeholder="e.g. Bangalore, India">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-experience"><i class="fa-solid fa-chart-line"></i> Total Experience</label>
+                            <input type="text" id="field-experience" placeholder="e.g. 5-8 Yrs">
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Resume & Files -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-file-pdf"></i> Resume / Document Details
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-pdf-file"><i class="fa-solid fa-file-pdf"></i> PDF File Name</label>
+                            <div class="input-with-actions">
+                                <input type="text" id="field-pdf-file" placeholder="e.g. Candidate_Resume.pdf">
+                                <button type="button" class="action-btn doc" id="btn-view-pdf" title="View PDF">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-resume-file"><i class="fa-solid fa-file-lines"></i> Resume File Name</label>
+                            <div class="input-with-actions">
+                                <input type="text" id="field-resume-file" placeholder="e.g. Indeed_Candidate_1.pdf">
+                                <button type="button" class="action-btn doc" id="btn-view-resume" title="View Resume">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="box-item box-span-2">
+                            <label for="field-processed-timestamp"><i class="fa-solid fa-clock"></i> Processed Timestamp</label>
+                            <input type="text" id="field-processed-timestamp" placeholder="YYYY-MM-DD HH:MM:SS">
+                        </div>
+                    </div>
+
+                    <!-- Section 4: HR Calling & Remarks -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-headset"></i> HR Calling Status & Follow-up
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-hr-called"><i class="fa-solid fa-phone-volume"></i> HR Called</label>
+                            <select id="field-hr-called">
+                                <option value="Yes">Yes</option>
+                                <option value="No">No</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Busy / Call Later">Busy / Call Later</option>
+                                <option value="Not Reachable">Not Reachable</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-call-date"><i class="fa-solid fa-calendar-day"></i> Call Date</label>
+                            <input type="date" id="field-call-date">
+                        </div>
+                        <div class="box-item box-span-2">
+                            <label for="field-hr-remarks"><i class="fa-solid fa-comment-dots"></i> HR Remarks</label>
+                            <textarea id="field-hr-remarks" rows="2" placeholder="Enter notes from call, discussion, candidate expectations..."></textarea>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-followup-date"><i class="fa-solid fa-calendar-check"></i> Follow-up Date</label>
+                            <input type="date" id="field-followup-date">
+                        </div>
+                        <div class="box-item box-span-2">
+                            <label for="field-followup-remarks"><i class="fa-solid fa-comments"></i> HR Follow-up Remarks</label>
+                            <textarea id="field-followup-remarks" rows="2" placeholder="Notes for next follow-up action..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Reviewer & Workflow Routing -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-share-nodes"></i> Review / Staging Options
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-submitter-name"><i class="fa-solid fa-user-pen"></i> Submitter Name</label>
+                            <input type="text" id="field-submitter-name" value="Raj">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-assign-reviewer"><i class="fa-solid fa-user-check"></i> Assign Reviewer (Optional)</label>
+                            <select id="field-assign-reviewer">
+                                <option value="Direct Commit">None (Direct Save to Excel)</option>
+                                <!-- Dynamic reviewers options -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-candidate">Cancel</button>
+                        <button type="button" class="btn btn-accent" id="btn-share-candidate-modal">
+                            <i class="fa-solid fa-share-nodes"></i> Share
+                        </button>
+                        <button type="button" class="btn btn-outline" id="btn-stage-review">
+                            <i class="fa-solid fa-code-pull-request"></i> Submit for Review
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="btn-save-candidate">
+                            <i class="fa-solid fa-floppy-disk"></i> Save & Update Master Excel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Share / Next Level Modal -->
+    <div class="modal-overlay" id="modal-share" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <h3>Share Candidate Details (Next Level)</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-share-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Formatted candidate brief ready for instant sharing via WhatsApp, Email, or Clipboard:</p>
+                <div class="share-preview-card" id="share-preview-text">
+                    <!-- Formatted text generated here -->
+                </div>
+                <div class="share-actions-grid">
+                    <button class="btn btn-whatsapp w-full" id="btn-share-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> Share on WhatsApp
+                    </button>
+                    <button class="btn btn-email w-full" id="btn-share-email">
+                        <i class="fa-solid fa-envelope"></i> Share via Email
+                    </button>
+                    <button class="btn btn-secondary w-full" id="btn-share-copy">
+                        <i class="fa-solid fa-copy"></i> Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Add/Edit Reviewer Modal -->
+    <div class="modal-overlay" id="modal-reviewer-form" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <h3 id="reviewer-modal-title">Add Reviewer Contact</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-reviewer-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewer-form">
+                    <div class="box-item">
+                        <label for="rev-name"><i class="fa-solid fa-user"></i> Full Name *</label>
+                        <input type="text" id="rev-name" required placeholder="e.g. Priya Sharma">
+                    </div>
+                    <div class="box-item">
+                        <label for="rev-phone"><i class="fa-solid fa-phone"></i> Phone Number *</label>
+                        <input type="text" id="rev-phone" required placeholder="e.g. +91 98765 43210">
+                    </div>
+                    <div class="box-item">
+                        <label for="rev-email"><i class="fa-solid fa-envelope"></i> Email Address *</label>
+                        <input type="email" id="rev-email" required placeholder="e.g. priya.sharma@example.com">
+                    </div>
+                    <div class="box-item">
+                        <label for="rev-role"><i class="fa-solid fa-shield-halved"></i> Role / Designation</label>
+                        <input type="text" id="rev-role" placeholder="e.g. Hiring Lead / Technical Manager" value="Reviewer">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-reviewer">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-check"></i> Save Reviewer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Import XLSX File Modal -->
+    <div class="modal-overlay" id="modal-import-excel" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-file-import"></i>
+                    <h3>Import Excel (.xlsx) Candidates</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-import-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Select or drag & drop an Excel file to import and merge candidate records into your master tracker.</p>
+                
+                <div class="box-item">
+                    <label for="import-file-input"><i class="fa-solid fa-file-excel"></i> Choose .xlsx File *</label>
+                    <input type="file" id="import-file-input" accept=".xlsx, .xls" style="padding: 8px;">
+                </div>
+
+                <div class="box-item">
+                    <label><i class="fa-solid fa-sliders"></i> Import Mode</label>
+                    <select id="import-mode-select">
+                        <option value="append">Append (Add to existing master records)</option>
+                        <option value="replace">Replace All (Overwrite existing master records)</option>
+                    </select>
+                </div>
+
+                <div class="connection-tips" style="margin-top: 8px;">
+                    <h4><i class="fa-solid fa-circle-info"></i> Column Auto-Mapping:</h4>
+                    <p style="font-size: 11px; color: var(--text-secondary);">
+                        The importer automatically maps matching column headers such as Name, Phone, Email, Location, Total Experience, Portal Source, HR Called, and Remarks.
+                    </p>
+                </div>
+
+                <div class="modal-footer" style="padding: 12px 0 0 0;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-import">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-submit-import">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload & Import Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

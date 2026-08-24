@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1589d1f9",
+    "name": "Lead Reviewer",
+    "phone": "+91 98765 00000",
+    "email": "reviewer@example.com",
+    "role": "Lead Reviewer",
+    "status": "Active"
+  },
+  {
+    "id": "f141ebe1",
+    "name": "Hiring Manager",
+    "phone": "+91 98765 00011",
+    "email": "hiring.manager@example.com",
+    "role": "Hiring Lead",
+    "status": "Active"
+  }
+]
