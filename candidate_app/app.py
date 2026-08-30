@@ -94,6 +94,7 @@ def get_stats():
     follow_ups = sum(1 for c in candidates if c.get("Follow-up Date") and c.get("Follow-up Date").strip() != "")
     
     pending_reviews = [r for r in load_json(PENDING_REVIEWS_FILE, []) if r.get("status") == "pending"]
+    escalated = sum(1 for c in candidates if c.get("Escalation Level / Person") and c.get("Escalation Level / Person").strip() not in ["", "None", "None / No Escalation", "No Escalation"])
     
     portals = {}
     for c in candidates:
@@ -105,6 +106,7 @@ def get_stats():
         "called_count": called,
         "pending_call_count": pending_call,
         "follow_ups_count": follow_ups,
+        "escalated_count": escalated,
         "pending_reviews_count": len(pending_reviews),
         "portals_breakdown": portals
     })
@@ -114,7 +116,8 @@ def get_candidates():
     query = request.args.get('query', '')
     status = request.args.get('status', 'All')
     portal = request.args.get('portal', 'All')
-    candidates = excel_mgr.get_all_candidates(query=query, filter_status=status, filter_portal=portal)
+    escalation = request.args.get('escalation', 'All')
+    candidates = excel_mgr.get_all_candidates(query=query, filter_status=status, filter_portal=portal, filter_escalation=escalation)
     return jsonify({"success": True, "count": len(candidates), "candidates": candidates})
 
 @app.route('/api/candidates/<int:row_id>', methods=['GET'])

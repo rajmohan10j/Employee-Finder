@@ -20,7 +20,10 @@ TRACKER_HEADERS = [
     'Date',
     'HR Remarks',
     'Follow-up Date',
-    'HR Follow-up Remarks'
+    'HR Follow-up Remarks',
+    'Escalation Level / Person',
+    'Escalation Action Category',
+    'Escalation Remarks'
 ]
 
 class ExcelManager:
@@ -38,6 +41,22 @@ class ExcelManager:
             ws.title = "Tracker"
             ws.append(TRACKER_HEADERS)
             wb.save(self.file_path)
+        else:
+            # Upgrade headers in existing file if new columns added
+            with self.lock:
+                try:
+                    wb = openpyxl.load_workbook(self.file_path)
+                    ws = wb.active
+                    existing_headers = [str(ws.cell(row=1, column=c).value).strip() for c in range(1, ws.max_column + 1) if ws.cell(row=1, column=c).value]
+                    changed = False
+                    for idx, header in enumerate(TRACKER_HEADERS):
+                        if idx >= len(existing_headers) or existing_headers[idx] != header:
+                            ws.cell(row=1, column=idx + 1).value = header
+                            changed = True
+                    if changed:
+                        wb.save(self.file_path)
+                except Exception as e:
+                    print(f"[Header Sync Warning] {e}")
 
     def _create_backup(self):
         try:
@@ -56,16 +75,19 @@ class ExcelManager:
         except Exception as e:
             print(f"[Backup Error] {e}")
 
-    def get_all_candidates(self, query=None, filter_status=None, filter_portal=None):
+    def get_all_candidates(self, query=None, filter_status=None, filter_portal=None, filter_escalation=None):
         with self.lock:
             wb = openpyxl.load_workbook(self.file_path, data_only=True)
             ws = wb.active
             
             # Identify headers from Row 1
             headers = []
-            for col in range(1, len(TRACKER_HEADERS) + 1):
+            for col in range(1, max(len(TRACKER_HEADERS), ws.max_column) + 1):
                 val = ws.cell(row=1, column=col).value
-                headers.append(str(val).strip() if val else TRACKER_HEADERS[col-1])
+                if val:
+                    headers.append(str(val).strip())
+                elif col <= len(TRACKER_HEADERS):
+                    headers.append(TRACKER_HEADERS[col-1])
 
             candidates = []
             for row_idx in range(2, ws.max_row + 1):
@@ -99,6 +121,14 @@ class ExcelManager:
                 if filter_portal and filter_portal != "All":
                     portal = row_data.get("Portal Source", "").lower()
                     if filter_portal.lower() not in portal:
+                        continue
+
+                if filter_escalation and filter_escalation != "All":
+                    esc = row_data.get("Escalation Level / Person", "").lower()
+                    if filter_escalation.lower() in ["none", "no escalation"]:
+                        if esc and esc not in ["none", "no escalation", ""]:
+                            continue
+                    elif filter_escalation.lower() not in esc:
                         continue
 
                 candidates.append(row_data)

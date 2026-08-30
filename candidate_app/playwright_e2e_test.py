@@ -109,6 +109,9 @@ def run_playwright_tests():
         print(f"  ✓ Field Verification - Phone: '{phone}', Email: '{email}', Exp: '{exp}', Loc: '{loc}'")
         
         page.locator('#field-hr-remarks').fill('Playwright Screening: Candidate verified for next stage.')
+        page.locator('#field-escalation-level').select_option('L2 - Raj')
+        page.locator('#field-escalation-action').select_option('Review / Suggest')
+        page.locator('#field-escalation-remarks').fill('Escalated to L2 Raj: Review candidate Python experience and suggest compensation.')
         page.locator('#field-assign-reviewer').select_option(index=1)
         
         page.screenshot(path=str(SCREENSHOTS_DIR / "03_box_form_editor.png"))
@@ -116,7 +119,12 @@ def run_playwright_tests():
         page.locator('#btn-save-candidate').click()
         page.wait_for_selector('#modal-candidate-form', state='hidden')
         page.wait_for_timeout(500)
-        print("  ✓ Candidate modifications successfully saved/staged for review.")
+        print("  ✓ Candidate modifications & Escalation to 'L2 - Raj' successfully saved.")
+        
+        # Verify Escalation Badge rendered on card
+        esc_badge = page.locator('.badge-escalation').first
+        assert esc_badge.is_visible(), "Escalation badge should be visible on candidate card"
+        print(f"  ✓ Escalation badge verified on screen: '{esc_badge.text_content().strip()}'")
 
         # -------------------------------------------------------------
         # TEST 4: Share Candidate to Next Level Modal

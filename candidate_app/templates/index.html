@@ -189,6 +189,17 @@
                                 <option value="Google">Google / Web</option>
                             </select>
                         </div>
+                        <div class="select-wrapper">
+                            <i class="fa-solid fa-triangle-exclamation select-icon"></i>
+                            <select id="filter-escalation">
+                                <option value="All">Escalation: All</option>
+                                <option value="None">No Escalation</option>
+                                <option value="L1 - HR Person">L1 - HR Person</option>
+                                <option value="L2 - Raj">L2 - Raj</option>
+                                <option value="L3 - Chaitali">L3 - Chaitali</option>
+                                <option value="L4 - Matthew">L4 - Matthew</option>
+                            </select>
+                        </div>
                         <button class="btn btn-outline btn-sm" id="btn-toolbar-import">
                             <i class="fa-solid fa-file-import"></i> Import XLSX
                         </button>
@@ -443,7 +454,40 @@
                         </div>
                     </div>
 
-                    <!-- Section 5: Reviewer & Workflow Routing -->
+                    <!-- Section 5: Escalation Matrix & Action Required -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Escalation Matrix & Action Required
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-escalation-level"><i class="fa-solid fa-user-shield"></i> Escalation Level / Person</label>
+                            <select id="field-escalation-level">
+                                <option value="None / No Escalation">None / No Escalation</option>
+                                <option value="L1 - HR Person">L1 - HR Person</option>
+                                <option value="L2 - Raj">L2 - Raj</option>
+                                <option value="L3 - Chaitali">L3 - Chaitali</option>
+                                <option value="L4 - Matthew">L4 - Matthew</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-escalation-action"><i class="fa-solid fa-list-check"></i> Action Category (Standard)</label>
+                            <select id="field-escalation-action">
+                                <option value="None">None</option>
+                                <option value="Need to Talk">Need to Talk</option>
+                                <option value="Review / Suggest">Review / Suggest</option>
+                                <option value="Interview Decision">Interview Decision</option>
+                                <option value="Salary / CTC Approval">Salary / CTC Approval</option>
+                                <option value="Notice Period / Location Exception">Notice Period / Location Exception</option>
+                                <option value="Other / Custom Action">Other / Custom Action</option>
+                            </select>
+                        </div>
+                        <div class="box-item box-span-2">
+                            <label for="field-escalation-remarks"><i class="fa-solid fa-comment-medical"></i> Escalation Comments / Action Details</label>
+                            <textarea id="field-escalation-remarks" rows="2" placeholder="Enter specific questions, notes, or action required for the designated level..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Section 6: Reviewer & Workflow Routing -->
                     <div class="form-section-title">
                         <i class="fa-solid fa-share-nodes"></i> Review / Staging Options
                     </div>

@@ -84,6 +84,11 @@ const elements = {
     importFileInput: document.getElementById('import-file-input'),
     importModeSelect: document.getElementById('import-mode-select'),
     
+    // Filters
+    filterStatus: document.getElementById('filter-status'),
+    filterPortal: document.getElementById('filter-portal'),
+    filterEscalation: document.getElementById('filter-escalation'),
+    
     // Buttons & Inputs
     btnAddCandidate: document.getElementById('btn-add-candidate'),
     btnRefresh: document.getElementById('btn-refresh'),
@@ -112,6 +117,9 @@ const elements = {
     fieldHrRemarks: document.getElementById('field-hr-remarks'),
     fieldFollowupDate: document.getElementById('field-followup-date'),
     fieldFollowupRemarks: document.getElementById('field-followup-remarks'),
+    fieldEscalationLevel: document.getElementById('field-escalation-level'),
+    fieldEscalationAction: document.getElementById('field-escalation-action'),
+    fieldEscalationRemarks: document.getElementById('field-escalation-remarks'),
     fieldSubmitterName: document.getElementById('field-submitter-name'),
     fieldAssignReviewer: document.getElementById('field-assign-reviewer'),
     
@@ -237,6 +245,9 @@ function setupEventListeners() {
 
     elements.filterStatus.addEventListener('change', fetchCandidates);
     elements.filterPortal.addEventListener('change', fetchCandidates);
+    if (elements.filterEscalation) {
+        elements.filterEscalation.addEventListener('change', fetchCandidates);
+    }
 
     // Candidate Form Open / Close
     elements.btnAddCandidate.addEventListener('click', () => openCandidateModal(null));
@@ -448,8 +459,9 @@ async function fetchCandidates() {
     const query = elements.searchInput.value.trim();
     const status = elements.filterStatus.value;
     const portal = elements.filterPortal.value;
+    const escalation = elements.filterEscalation ? elements.filterEscalation.value : 'All';
 
-    const params = new URLSearchParams({ query, status, portal });
+    const params = new URLSearchParams({ query, status, portal, escalation });
     try {
         const res = await fetch(`${API_BASE}/candidates?${params.toString()}`);
         const data = await res.json();
@@ -596,11 +608,29 @@ function renderCandidatesList(candidates) {
         const portal = c['Portal Source'] || 'Other';
         const remarks = c['HR Remarks'] || c['HR Follow-up Remarks'] || '';
 
+        const escLevel = (c['Escalation Level / Person'] || '').trim();
+        const escAction = (c['Escalation Action Category'] || '').trim();
+        const escRemarks = (c['Escalation Remarks'] || '').trim();
+        const hasEscalation = escLevel && !escLevel.toLowerCase().includes('none') && escLevel !== '';
+
+        let escBadgeClass = 'badge-escalation';
+        if (escLevel.startsWith('L1')) escBadgeClass = 'badge-escalation badge-escalation-l1';
+        else if (escLevel.startsWith('L2')) escBadgeClass = 'badge-escalation badge-escalation-l2';
+        else if (escLevel.startsWith('L3')) escBadgeClass = 'badge-escalation badge-escalation-l3';
+        else if (escLevel.startsWith('L4')) escBadgeClass = 'badge-escalation badge-escalation-l4';
+
         return `
             <div class="candidate-card" data-row-id="${c._row_id}">
                 <div class="card-top">
                     <h3 class="card-candidate-name">${escapeHtml(c['Candidate Name'] || 'Unnamed Candidate')}</h3>
-                    <span class="card-portal-badge">${escapeHtml(portal)}</span>
+                    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                        ${hasEscalation ? `
+                            <span class="${escBadgeClass}" title="Escalated to ${escapeHtml(escLevel)} (${escapeHtml(escAction)})">
+                                <i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(escLevel.split(' - ')[0] || escLevel)}: ${escapeHtml(escAction || 'Action')}
+                            </span>
+                        ` : ''}
+                        <span class="card-portal-badge">${escapeHtml(portal)}</span>
+                    </div>
                 </div>
 
                 <div class="card-info-list">
@@ -625,6 +655,12 @@ function renderCandidatesList(candidates) {
                 ${remarks ? `
                     <div class="card-remarks-box">
                         <strong>HR Notes:</strong> ${escapeHtml(remarks)}
+                    </div>
+                ` : ''}
+
+                ${hasEscalation ? `
+                    <div class="card-escalation-box">
+                        <strong>⚡ ${escapeHtml(escLevel)} [${escapeHtml(escAction || 'Action Req')}]:</strong> ${escapeHtml(escRemarks || 'Review required')}
                     </div>
                 ` : ''}
 
@@ -707,11 +743,17 @@ function openCandidateModal(rowId) {
         elements.fieldHrRemarks.value = c['HR Remarks'] || '';
         elements.fieldFollowupDate.value = c['Follow-up Date'] || '';
         elements.fieldFollowupRemarks.value = c['HR Follow-up Remarks'] || '';
+        if (elements.fieldEscalationLevel) elements.fieldEscalationLevel.value = c['Escalation Level / Person'] || 'None / No Escalation';
+        if (elements.fieldEscalationAction) elements.fieldEscalationAction.value = c['Escalation Action Category'] || 'None';
+        if (elements.fieldEscalationRemarks) elements.fieldEscalationRemarks.value = c['Escalation Remarks'] || '';
         elements.fieldAssignReviewer.value = 'Direct Commit';
     } else {
         elements.candidateForm.reset();
         elements.fieldRowId.value = '';
         elements.fieldProcessedTimestamp.value = new Date().toISOString().replace('T', ' ').substring(0, 19);
+        if (elements.fieldEscalationLevel) elements.fieldEscalationLevel.value = 'None / No Escalation';
+        if (elements.fieldEscalationAction) elements.fieldEscalationAction.value = 'None';
+        if (elements.fieldEscalationRemarks) elements.fieldEscalationRemarks.value = '';
         elements.fieldAssignReviewer.value = 'Direct Commit';
     }
 
@@ -753,6 +795,9 @@ function collectFormData() {
         'HR Remarks': elements.fieldHrRemarks.value.trim(),
         'Follow-up Date': elements.fieldFollowupDate.value,
         'HR Follow-up Remarks': elements.fieldFollowupRemarks.value.trim(),
+        'Escalation Level / Person': elements.fieldEscalationLevel ? elements.fieldEscalationLevel.value : 'None / No Escalation',
+        'Escalation Action Category': elements.fieldEscalationAction ? elements.fieldEscalationAction.value : 'None',
+        'Escalation Remarks': elements.fieldEscalationRemarks ? elements.fieldEscalationRemarks.value.trim() : '',
         '_submitted_by': elements.fieldSubmitterName.value.trim() || 'Raj',
         '_reviewer_assigned': elements.fieldAssignReviewer.value
     };
@@ -827,6 +872,11 @@ function closeShareModal() {
 }
 
 function generateShareSummary(c) {
+    const escLevel = (c['Escalation Level / Person'] || '').trim();
+    const escAction = (c['Escalation Action Category'] || '').trim();
+    const escRemarks = (c['Escalation Remarks'] || '').trim();
+    const hasEsc = escLevel && !escLevel.toLowerCase().includes('none') && escLevel !== '';
+
     return `📌 *CANDIDATE PROFILE SUMMARY*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 👤 *Name/Role*: ${c['Candidate Name'] || 'N/A'}
@@ -839,7 +889,7 @@ function generateShareSummary(c) {
 📞 *HR Status*: ${c['HR Called'] || 'Pending'}
 📝 *HR Remarks*: ${c['HR Remarks'] || 'None'}
 ⏰ *Follow-up Date*: ${c['Follow-up Date'] || 'None'}
-${c['HR Follow-up Remarks'] ? `📌 *Follow-up Note*: ${c['HR Follow-up Remarks']}\n` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
+${c['HR Follow-up Remarks'] ? `📌 *Follow-up Note*: ${c['HR Follow-up Remarks']}\n` : ''}${hasEsc ? `⚡ *Escalation Target*: ${escLevel}\n📋 *Action Required*: ${escAction || 'Review'}\n${escRemarks ? `💬 *Escalation Note*: ${escRemarks}\n` : ''}` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔗 *Shared via CandidateTracker System*`;
 }
 

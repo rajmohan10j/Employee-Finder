@@ -1,23 +1,39 @@
 [
   {
-    "id": "da1c2340",
-    "name": "Raj (Admin)",
-    "phone": "+91 98765 43210",
-    "email": "raj.admin@example.com",
-    "role": "Lead Reviewer",
-    "status": "Active"
-  },
-  {
-    "id": "3b0b5572",
-    "name": "HR Lead / Manager",
+    "id": "l1-hr",
+    "name": "L1 - HR Person",
     "phone": "+91 91234 56789",
-    "email": "hr.manager@example.com",
-    "role": "Hiring Lead",
+    "email": "hr.team@example.com",
+    "role": "Recruiter / Sourcing Lead",
     "status": "Active"
   },
   {
-    "id": "91dd626c",
-    "name": "Lead Reviewer 800",
+    "id": "l2-raj",
+    "name": "L2 - Raj",
+    "phone": "+91 98765 43210",
+    "email": "raj.lead@example.com",
+    "role": "Lead Reviewer & Tech Sourcing",
+    "status": "Active"
+  },
+  {
+    "id": "l3-chaitali",
+    "name": "L3 - Chaitali",
+    "phone": "+91 98765 43211",
+    "email": "chaitali.manager@example.com",
+    "role": "Hiring Manager / Department Lead",
+    "status": "Active"
+  },
+  {
+    "id": "l4-matthew",
+    "name": "L4 - Matthew",
+    "phone": "+91 98765 43212",
+    "email": "matthew.exec@example.com",
+    "role": "Executive Approver / Final Authority",
+    "status": "Active"
+  },
+  {
+    "id": "234623b1",
+    "name": "Lead Reviewer 435",
     "phone": "+91 98888 77777",
     "email": "test.lead@example.com",
     "role": "Principal AI Reviewer",
