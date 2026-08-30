@@ -206,8 +206,8 @@
                         <div class="select-wrapper">
                             <i class="fa-solid fa-triangle-exclamation select-icon"></i>
                             <select id="filter-escalation">
-                                <option value="All">Escalation: All</option>
-                                <option value="None">No Escalation</option>
+                                <option value="All">Task / Assigned To: All</option>
+                                <option value="None">None / Unassigned</option>
                                 <option value="L1 - HR Person">L1 - HR Person</option>
                                 <option value="L2 - Raj">L2 - Raj</option>
                                 <option value="L3 - Chaitali">L3 - Chaitali</option>
@@ -461,13 +461,13 @@
 
                     <!-- Section 5: Escalation Matrix & Action Required -->
                     <div class="form-section-title" style="color: #fbbf24; border-bottom: 2px solid rgba(245, 158, 11, 0.3);">
-                        <i class="fa-solid fa-triangle-exclamation"></i> ⚡ Escalation Matrix (L1 to L4) & Action Required
+                        <i class="fa-solid fa-triangle-exclamation"></i> ⚡ Task Escalation & Action Assignment (L1 to L4)
                     </div>
                     <div class="box-grid" style="background: rgba(245, 158, 11, 0.04); border-radius: 8px; padding: 12px; border: 1px dashed rgba(245, 158, 11, 0.25);">
                         <div class="box-item">
-                            <label for="field-escalation-level" style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-user-shield"></i> Escalation Level / Person</label>
+                            <label for="field-escalation-level" style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-user-shield"></i> Task / Assigned To:</label>
                             <select id="field-escalation-level" style="border-color: rgba(245, 158, 11, 0.4);">
-                                <option value="None / No Escalation">None / No Escalation</option>
+                                <option value="None / No Escalation">None / Unassigned</option>
                                 <option value="L1 - HR Person">L1 - HR Person (Recruiter / Sourcing Lead)</option>
                                 <option value="L2 - Raj">L2 - Raj (Lead Reviewer & Tech Sourcing)</option>
                                 <option value="L3 - Chaitali">L3 - Chaitali (Hiring Manager / Department Lead)</option>
@@ -481,8 +481,6 @@
                                 <option value="Need to Talk">Need to Talk</option>
                                 <option value="Review / Suggest">Review / Suggest</option>
                                 <option value="Interview Decision">Interview Decision</option>
-                                <option value="Salary / CTC Approval">Salary / CTC Approval</option>
-                                <option value="Notice Period / Location Exception">Notice Period / Location Exception</option>
                                 <option value="Other / Custom Action">Other / Custom Action</option>
                             </select>
                         </div>

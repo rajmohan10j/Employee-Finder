@@ -656,12 +656,12 @@ function renderCandidatesList(candidates) {
                     <h3 class="card-candidate-name">${escapeHtml(c['Candidate Name'] || 'Unnamed Candidate')}</h3>
                     <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                         ${hasEscalation ? `
-                            <span class="${escBadgeClass}" onclick="event.stopPropagation(); quickOpenEscalation(${c._row_id})" title="Escalated to ${escapeHtml(escLevel)} (${escapeHtml(escAction)}) - Click to edit">
+                            <span class="${escBadgeClass}" onclick="event.stopPropagation(); quickOpenEscalation(${c._row_id})" title="Task Assigned to ${escapeHtml(escLevel)} (${escapeHtml(escAction)}) - Click to edit">
                                 <i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(escLevel.split(' - ')[0] || escLevel)}: ${escapeHtml(escAction || 'Action')}
                             </span>
                         ` : `
-                            <button type="button" class="btn-quick-esc" onclick="event.stopPropagation(); quickOpenEscalation(${c._row_id})" title="Click to Escalate to L1, L2, L3, or L4">
-                                <i class="fa-solid fa-bolt"></i> Escalate (L1-L4)
+                            <button type="button" class="btn-quick-esc" onclick="event.stopPropagation(); quickOpenEscalation(${c._row_id})" title="Click to Assign Task / Escalate to L1, L2, L3, or L4">
+                                <i class="fa-solid fa-bolt"></i> Assign Task
                             </button>
                         `}
                         <span class="card-portal-badge">${escapeHtml(portal)}</span>
@@ -695,7 +695,7 @@ function renderCandidatesList(candidates) {
 
                 ${hasEscalation ? `
                     <div class="card-escalation-box">
-                        <strong>⚡ ${escapeHtml(escLevel)} [${escapeHtml(escAction || 'Action Req')}]:</strong> ${escapeHtml(escRemarks || 'Review required')}
+                        <strong>⚡ Task / Assigned To: ${escapeHtml(escLevel)} [${escapeHtml(escAction || 'Action Req')}]:</strong> ${escapeHtml(escRemarks || 'Action details required')}
                     </div>
                 ` : ''}
 
@@ -961,7 +961,7 @@ function generateShareSummary(c) {
 📞 *HR Status*: ${c['HR Called'] || 'Pending'}
 📝 *HR Remarks*: ${c['HR Remarks'] || 'None'}
 ⏰ *Follow-up Date*: ${c['Follow-up Date'] || 'None'}
-${c['HR Follow-up Remarks'] ? `📌 *Follow-up Note*: ${c['HR Follow-up Remarks']}\n` : ''}${hasEsc ? `⚡ *Escalation Target*: ${escLevel}\n📋 *Action Required*: ${escAction || 'Review'}\n${escRemarks ? `💬 *Escalation Note*: ${escRemarks}\n` : ''}` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
+${c['HR Follow-up Remarks'] ? `📌 *Follow-up Note*: ${c['HR Follow-up Remarks']}\n` : ''}${hasEsc ? `⚡ *Task / Assigned To*: ${escLevel}\n📋 *Action Required*: ${escAction || 'Review'}\n${escRemarks ? `💬 *Action Details*: ${escRemarks}\n` : ''}` : ''}━━━━━━━━━━━━━━━━━━━━━━━━━━
 🔗 *Shared via CandidateTracker System*`;
 }
 
