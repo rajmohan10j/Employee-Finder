@@ -702,6 +702,20 @@ html, body {
 .pill-called { background: var(--success-bg); color: var(--success); }
 .pill-pending { background: var(--warning-bg); color: var(--warning); }
 .pill-not-reachable { background: var(--danger-bg); color: var(--danger); }
+.pill-not-interested { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+.input-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+    animation: inputShake 0.35s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes inputShake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+    40%, 60% { transform: translate3d(3px, 0, 0); }
+}
 
 .card-actions {
     display: flex;

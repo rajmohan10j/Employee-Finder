@@ -333,6 +333,8 @@
                                 <option value="Actively Looking">Actively Looking</option>
                                 <option value="Yes">Yes</option>
                                 <option value="Serving Notice">Serving Notice</option>
+                                <option value="Not Interested">Not Interested</option>
+                                <option value="Already Placed / Joined">Already Placed / Joined</option>
                                 <option value="No">No</option>
                             </select>
                         </div>
@@ -416,14 +418,15 @@
                             <label for="field-hr-called"><i class="fa-solid fa-phone-volume"></i> HR Called</label>
                             <select id="field-hr-called">
                                 <option value="Yes">Yes</option>
-                                <option value="No">No</option>
+                                <option value="Yes - Not Interested">Yes (Not Interested)</option>
                                 <option value="Pending">Pending</option>
                                 <option value="Busy / Call Later">Busy / Call Later</option>
                                 <option value="Not Reachable">Not Reachable</option>
+                                <option value="No">No</option>
                             </select>
                         </div>
                         <div class="box-item">
-                            <label for="field-call-date"><i class="fa-solid fa-calendar-day"></i> Call Date</label>
+                            <label for="field-call-date" id="label-call-date"><i class="fa-solid fa-calendar-day"></i> Call Date <span id="call-date-required" style="color:#ef4444; font-weight:bold; display:none;">* (Mandatory)</span></label>
                             <input type="date" id="field-call-date">
                         </div>
                         <div class="box-item box-span-2">

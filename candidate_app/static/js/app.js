@@ -243,6 +243,40 @@ function setupEventListeners() {
     elements.btnCloseCandidateModal.addEventListener('click', closeCandidateModal);
     elements.btnCancelCandidate.addEventListener('click', closeCandidateModal);
     
+    // Dynamic Call Date requirement & auto-prefill on HR Called change
+    const callDateRequiredIndicator = document.getElementById('call-date-required');
+    if (elements.fieldHrCalled) {
+        elements.fieldHrCalled.addEventListener('change', () => {
+            const val = (elements.fieldHrCalled.value || '').trim().toLowerCase();
+            const isCalled = val.startsWith('yes');
+            if (callDateRequiredIndicator) {
+                callDateRequiredIndicator.style.display = isCalled ? 'inline' : 'none';
+            }
+            if (isCalled) {
+                // Auto-prefill today's date if empty
+                if (!elements.fieldCallDate.value) {
+                    elements.fieldCallDate.value = new Date().toISOString().split('T')[0];
+                }
+                // If marked Not Interested, suggest updating Open To Work
+                if (val.includes('not interested')) {
+                    if (elements.fieldOpenToWork && (elements.fieldOpenToWork.value === 'Actively Looking' || elements.fieldOpenToWork.value === 'Yes')) {
+                        elements.fieldOpenToWork.value = 'Not Interested';
+                    }
+                }
+            } else {
+                elements.fieldCallDate.classList.remove('input-error');
+            }
+        });
+    }
+
+    if (elements.fieldCallDate) {
+        elements.fieldCallDate.addEventListener('input', () => {
+            if (elements.fieldCallDate.value) {
+                elements.fieldCallDate.classList.remove('input-error');
+            }
+        });
+    }
+
     // Direct Save (Default)
     elements.candidateForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -536,17 +570,22 @@ function renderCandidatesList(candidates) {
     }
 
     elements.candidatesList.innerHTML = candidates.map(c => {
-        const isCalled = (c['HR Called'] || '').toLowerCase().includes('yes');
-        const isPending = !c['HR Called'] || c['HR Called'].toLowerCase().includes('pending') || c['HR Called'].toLowerCase().includes('no');
+        const hrCalledRaw = (c['HR Called'] || '').trim();
+        const openToWorkRaw = (c['Open To Work / Active'] || '').trim();
+        const isNotInterested = hrCalledRaw.toLowerCase().includes('not interested') || openToWorkRaw.toLowerCase().includes('not interested');
+        const isCalled = hrCalledRaw.toLowerCase().startsWith('yes');
         
         let statusClass = 'pill-pending';
-        let statusText = c['HR Called'] || 'Not Called';
-        if (isCalled) {
+        let statusText = hrCalledRaw || 'Not Called';
+        if (isNotInterested) {
+            statusClass = 'pill-not-interested';
+            statusText = hrCalledRaw.toLowerCase().startsWith('yes') ? 'Called (Not Interested)' : 'Not Interested';
+        } else if (isCalled) {
             statusClass = 'pill-called';
             statusText = 'Called (Yes)';
-        } else if (c['HR Called'] && c['HR Called'].toLowerCase().includes('busy')) {
+        } else if (hrCalledRaw.toLowerCase().includes('busy') || hrCalledRaw.toLowerCase().includes('not reachable')) {
             statusClass = 'pill-not-reachable';
-            statusText = c['HR Called'];
+            statusText = hrCalledRaw;
         }
 
         const phone = c['Phone Number'] || 'Not provided';
@@ -676,6 +715,19 @@ function openCandidateModal(rowId) {
         elements.fieldAssignReviewer.value = 'Direct Commit';
     }
 
+    // Reset validation styles & update required indicator
+    if (elements.fieldCallDate) {
+        elements.fieldCallDate.classList.remove('input-error');
+    }
+    const isCalled = (elements.fieldHrCalled.value || '').trim().toLowerCase().startsWith('yes');
+    const callDateRequiredIndicator = document.getElementById('call-date-required');
+    if (callDateRequiredIndicator) {
+        callDateRequiredIndicator.style.display = isCalled ? 'inline' : 'none';
+    }
+    if (isCalled && !elements.fieldCallDate.value) {
+        elements.fieldCallDate.value = new Date().toISOString().split('T')[0];
+    }
+
     elements.modalCandidateForm.style.display = 'flex';
 }
 
@@ -707,6 +759,19 @@ function collectFormData() {
 }
 
 async function saveCandidateData(isStageForReview = false) {
+    const hrCalledVal = (elements.fieldHrCalled.value || '').trim().toLowerCase();
+    const isCalledYes = hrCalledVal.startsWith('yes');
+    
+    // MANDATORY VALIDATION: If HR Called is Yes, Call Date MUST be filled
+    if (isCalledYes && !elements.fieldCallDate.value.trim()) {
+        elements.fieldCallDate.classList.add('input-error');
+        showToast('⚠️ Call Date is mandatory when HR Called is "Yes"! Please select the Call Date.', 'warning');
+        elements.fieldCallDate.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        elements.fieldCallDate.focus();
+        return;
+    }
+    elements.fieldCallDate.classList.remove('input-error');
+
     const rowId = elements.fieldRowId.value;
     const formData = collectFormData();
 
