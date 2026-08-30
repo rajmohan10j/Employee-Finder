@@ -1572,3 +1572,103 @@ html, body {
         padding: 6px 8px;
     }
 }
+
+/* ==========================================================================
+   Escalation Matrix & Quick Close UI Enhancements
+   ========================================================================== */
+.badge-escalation {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    background: rgba(245, 158, 11, 0.18);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.15);
+    transition: var(--transition);
+}
+
+.badge-escalation:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+}
+
+.badge-escalation-l1 {
+    background: rgba(59, 130, 246, 0.18);
+    color: #60a5fa;
+    border-color: rgba(59, 130, 246, 0.45);
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.15);
+}
+
+.badge-escalation-l2 {
+    background: rgba(168, 85, 247, 0.18);
+    color: #c084fc;
+    border-color: rgba(168, 85, 247, 0.45);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
+}
+
+.badge-escalation-l3 {
+    background: rgba(234, 179, 8, 0.18);
+    color: #fde047;
+    border-color: rgba(234, 179, 8, 0.45);
+    box-shadow: 0 0 10px rgba(234, 179, 8, 0.15);
+}
+
+.badge-escalation-l4 {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.45);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.15);
+}
+
+.btn-quick-esc {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-muted);
+    border: 1px dashed var(--border-color);
+    transition: var(--transition);
+}
+
+.btn-quick-esc:hover {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border-color: #f59e0b;
+}
+
+.card-escalation-box {
+    margin-top: 8px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: rgba(245, 158, 11, 0.07);
+    border-left: 3px solid #f59e0b;
+    border-top: 1px dashed rgba(245, 158, 11, 0.2);
+    border-right: 1px dashed rgba(245, 158, 11, 0.2);
+    border-bottom: 1px dashed rgba(245, 158, 11, 0.2);
+    font-size: 11px;
+    color: #fbbf24;
+    line-height: 1.4;
+}
+
+.btn-card-action.btn-action-close:hover {
+    background: #dc2626 !important;
+    border-color: #dc2626 !important;
+    color: #fff !important;
+}
+
+.pill-not-interested {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+

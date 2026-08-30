@@ -141,6 +141,15 @@
                     </div>
                 </div>
                 <div class="metric-card">
+                    <div class="metric-icon metric-rose" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Closed (Not Int.)</span>
+                        <span class="metric-value" id="stat-closed" style="color: #f87171;">--</span>
+                    </div>
+                </div>
+                <div class="metric-card">
                     <div class="metric-icon metric-cyan">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                     </div>
@@ -150,12 +159,12 @@
                     </div>
                 </div>
                 <div class="metric-card">
-                    <div class="metric-icon metric-rose">
-                        <i class="fa-solid fa-clipboard-check"></i>
+                    <div class="metric-icon metric-purple" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
                     </div>
                     <div class="metric-details">
-                        <span class="metric-label">Pending Reviews</span>
-                        <span class="metric-value" id="stat-reviews">--</span>
+                        <span class="metric-label">Escalated</span>
+                        <span class="metric-value" id="stat-escalated" style="color: #c084fc;">--</span>
                     </div>
                 </div>
             </section>
@@ -176,8 +185,11 @@
                             <i class="fa-solid fa-phone-flip select-icon"></i>
                             <select id="filter-status">
                                 <option value="All">Call Status: All</option>
-                                <option value="called">Called (Yes)</option>
-                                <option value="pending">Pending / No</option>
+                                <option value="called">Called (Yes / Active)</option>
+                                <option value="pending">Pending / Not Called</option>
+                                <option value="closed">Closed / Not Interested</option>
+                                <option value="busy">Busy / Call Later</option>
+                                <option value="not_reachable">Not Reachable / RNR</option>
                             </select>
                         </div>
                         <div class="select-wrapper">
@@ -186,6 +198,8 @@
                                 <option value="All">Portal: All</option>
                                 <option value="Naukri">Naukri.com</option>
                                 <option value="Indeed">Indeed India</option>
+                                <option value="LinkedIn">LinkedIn</option>
+                                <option value="WorkIndia">WorkIndia</option>
                                 <option value="Google">Google / Web</option>
                             </select>
                         </div>
@@ -344,8 +358,9 @@
                                 <option value="Actively Looking">Actively Looking</option>
                                 <option value="Yes">Yes</option>
                                 <option value="Serving Notice">Serving Notice</option>
+                                <option value="Closed - Not Interested">Closed - Not Interested</option>
+                                <option value="Closed - Already Placed">Closed - Already Placed</option>
                                 <option value="Not Interested">Not Interested</option>
-                                <option value="Already Placed / Joined">Already Placed / Joined</option>
                                 <option value="No">No</option>
                             </select>
                         </div>
@@ -382,37 +397,27 @@
                             </div>
                         </div>
                         <div class="box-item">
-                            <label for="field-location"><i class="fa-solid fa-location-dot"></i> Location</label>
-                            <input type="text" id="field-location" placeholder="e.g. Bangalore, India">
+                            <label for="field-location"><i class="fa-solid fa-location-dot"></i> Location (City / Area)</label>
+                            <input type="text" id="field-location" placeholder="e.g. Bengaluru, India">
                         </div>
                         <div class="box-item">
-                            <label for="field-experience"><i class="fa-solid fa-chart-line"></i> Total Experience</label>
-                            <input type="text" id="field-experience" placeholder="e.g. 5-8 Yrs">
+                            <label for="field-experience"><i class="fa-solid fa-briefcase"></i> Total Experience</label>
+                            <input type="text" id="field-experience" placeholder="e.g. 5 Years / Extracted from PDF">
                         </div>
                     </div>
 
-                    <!-- Section 3: Resume & Files -->
+                    <!-- Section 3: File & System Records -->
                     <div class="form-section-title">
-                        <i class="fa-solid fa-file-pdf"></i> Resume / Document Details
+                        <i class="fa-solid fa-folder-open"></i> System & File Records
                     </div>
                     <div class="box-grid">
                         <div class="box-item">
                             <label for="field-pdf-file"><i class="fa-solid fa-file-pdf"></i> PDF File Name</label>
-                            <div class="input-with-actions">
-                                <input type="text" id="field-pdf-file" placeholder="e.g. Candidate_Resume.pdf">
-                                <button type="button" class="action-btn doc" id="btn-view-pdf" title="View PDF">
-                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                </button>
-                            </div>
+                            <input type="text" id="field-pdf-file" placeholder="e.g. Resume_Candidate.pdf">
                         </div>
                         <div class="box-item">
                             <label for="field-resume-file"><i class="fa-solid fa-file-lines"></i> Resume File Name</label>
-                            <div class="input-with-actions">
-                                <input type="text" id="field-resume-file" placeholder="e.g. Indeed_Candidate_1.pdf">
-                                <button type="button" class="action-btn doc" id="btn-view-resume" title="View Resume">
-                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
-                                </button>
-                            </div>
+                            <input type="text" id="field-resume-file" placeholder="e.g. Profile_Details.docx">
                         </div>
                         <div class="box-item box-span-2">
                             <label for="field-processed-timestamp"><i class="fa-solid fa-clock"></i> Processed Timestamp</label>
@@ -426,13 +431,13 @@
                     </div>
                     <div class="box-grid">
                         <div class="box-item">
-                            <label for="field-hr-called"><i class="fa-solid fa-phone-volume"></i> HR Called</label>
+                            <label for="field-hr-called"><i class="fa-solid fa-phone-volume"></i> HR Called Status</label>
                             <select id="field-hr-called">
-                                <option value="Yes">Yes</option>
-                                <option value="Yes - Not Interested">Yes (Not Interested)</option>
-                                <option value="Pending">Pending</option>
+                                <option value="Yes">Yes (Called & Active)</option>
+                                <option value="Closed - Not Interested">Closed - Not Interested</option>
+                                <option value="Pending">Pending / Not Called</option>
                                 <option value="Busy / Call Later">Busy / Call Later</option>
-                                <option value="Not Reachable">Not Reachable</option>
+                                <option value="Not Reachable">Not Reachable / RNR</option>
                                 <option value="No">No</option>
                             </select>
                         </div>
@@ -455,23 +460,23 @@
                     </div>
 
                     <!-- Section 5: Escalation Matrix & Action Required -->
-                    <div class="form-section-title">
-                        <i class="fa-solid fa-triangle-exclamation"></i> Escalation Matrix & Action Required
+                    <div class="form-section-title" style="color: #fbbf24; border-bottom: 2px solid rgba(245, 158, 11, 0.3);">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ⚡ Escalation Matrix (L1 to L4) & Action Required
                     </div>
-                    <div class="box-grid">
+                    <div class="box-grid" style="background: rgba(245, 158, 11, 0.04); border-radius: 8px; padding: 12px; border: 1px dashed rgba(245, 158, 11, 0.25);">
                         <div class="box-item">
-                            <label for="field-escalation-level"><i class="fa-solid fa-user-shield"></i> Escalation Level / Person</label>
-                            <select id="field-escalation-level">
+                            <label for="field-escalation-level" style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-user-shield"></i> Escalation Level / Person</label>
+                            <select id="field-escalation-level" style="border-color: rgba(245, 158, 11, 0.4);">
                                 <option value="None / No Escalation">None / No Escalation</option>
-                                <option value="L1 - HR Person">L1 - HR Person</option>
-                                <option value="L2 - Raj">L2 - Raj</option>
-                                <option value="L3 - Chaitali">L3 - Chaitali</option>
-                                <option value="L4 - Matthew">L4 - Matthew</option>
+                                <option value="L1 - HR Person">L1 - HR Person (Recruiter / Sourcing Lead)</option>
+                                <option value="L2 - Raj">L2 - Raj (Lead Reviewer & Tech Sourcing)</option>
+                                <option value="L3 - Chaitali">L3 - Chaitali (Hiring Manager / Department Lead)</option>
+                                <option value="L4 - Matthew">L4 - Matthew (Executive Approver / Final Authority)</option>
                             </select>
                         </div>
                         <div class="box-item">
-                            <label for="field-escalation-action"><i class="fa-solid fa-list-check"></i> Action Category (Standard)</label>
-                            <select id="field-escalation-action">
+                            <label for="field-escalation-action" style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-list-check"></i> Action Category (Standard)</label>
+                            <select id="field-escalation-action" style="border-color: rgba(245, 158, 11, 0.4);">
                                 <option value="None">None</option>
                                 <option value="Need to Talk">Need to Talk</option>
                                 <option value="Review / Suggest">Review / Suggest</option>
@@ -482,7 +487,7 @@
                             </select>
                         </div>
                         <div class="box-item box-span-2">
-                            <label for="field-escalation-remarks"><i class="fa-solid fa-comment-medical"></i> Escalation Comments / Action Details</label>
+                            <label for="field-escalation-remarks" style="color: #fbbf24;"><i class="fa-solid fa-comment-medical"></i> Escalation Comments / Action Details</label>
                             <textarea id="field-escalation-remarks" rows="2" placeholder="Enter specific questions, notes, or action required for the designated level..."></textarea>
                         </div>
                     </div>
@@ -505,10 +510,13 @@
                         </div>
                     </div>
 
-                    <div class="modal-footer">
+                    <div class="modal-footer" style="display:flex; flex-wrap:wrap; gap:8px;">
                         <button type="button" class="btn btn-secondary" id="btn-cancel-candidate">Cancel</button>
                         <button type="button" class="btn btn-accent" id="btn-share-candidate-modal">
                             <i class="fa-solid fa-share-nodes"></i> Share
+                        </button>
+                        <button type="button" class="btn btn-danger" id="btn-modal-quick-close" style="background:#dc2626; color:#fff; border:none;" title="Quick Close / Mark Candidate Not Interested">
+                            <i class="fa-solid fa-ban"></i> Close Candidate (Not Interested)
                         </button>
                         <button type="button" class="btn btn-outline" id="btn-stage-review">
                             <i class="fa-solid fa-code-pull-request"></i> Submit for Review

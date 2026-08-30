@@ -113,10 +113,23 @@ class ExcelManager:
 
                 if filter_status and filter_status != "All":
                     hr_called = row_data.get("HR Called", "").lower()
-                    if filter_status.lower() == "called" and "yes" not in hr_called:
-                        continue
-                    if filter_status.lower() == "pending" and ("yes" in hr_called):
-                        continue
+                    open_to_work = row_data.get("Open To Work / Active", "").lower()
+                    fs = filter_status.lower()
+                    if fs == "called":
+                        if "yes" not in hr_called or "not interested" in hr_called:
+                            continue
+                    elif fs == "pending":
+                        if "yes" in hr_called or "not interested" in hr_called or "closed" in hr_called or "not interested" in open_to_work:
+                            continue
+                    elif fs in ["closed", "not_interested", "not interested"]:
+                        if "not interested" not in hr_called and "closed" not in hr_called and "not interested" not in open_to_work and "closed" not in open_to_work:
+                            continue
+                    elif fs in ["busy", "call_later"]:
+                        if "busy" not in hr_called and "call later" not in hr_called and "call back" not in hr_called:
+                            continue
+                    elif fs in ["not_reachable", "rnr"]:
+                        if "not reachable" not in hr_called and "rnr" not in hr_called and "not connected" not in hr_called:
+                            continue
 
                 if filter_portal and filter_portal != "All":
                     portal = row_data.get("Portal Source", "").lower()

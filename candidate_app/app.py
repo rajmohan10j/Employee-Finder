@@ -90,7 +90,10 @@ def get_stats():
     candidates = excel_mgr.get_all_candidates()
     total = len(candidates)
     called = sum(1 for c in candidates if "yes" in c.get("HR Called", "").lower())
-    pending_call = total - called
+    closed_count = sum(1 for c in candidates if "not interested" in c.get("HR Called", "").lower() or "not interested" in c.get("Open To Work / Active", "").lower() or "closed" in c.get("HR Called", "").lower() or "closed" in c.get("Open To Work / Active", "").lower())
+    pending_call = total - called - sum(1 for c in candidates if ("busy" in c.get("HR Called", "").lower() or "not reachable" in c.get("HR Called", "").lower()) and "yes" not in c.get("HR Called", "").lower())
+    if pending_call < 0:
+        pending_call = 0
     follow_ups = sum(1 for c in candidates if c.get("Follow-up Date") and c.get("Follow-up Date").strip() != "")
     
     pending_reviews = [r for r in load_json(PENDING_REVIEWS_FILE, []) if r.get("status") == "pending"]
@@ -102,14 +105,40 @@ def get_stats():
         portals[p] = portals.get(p, 0) + 1
 
     return jsonify({
+        "success": True,
+        "total": total,
         "total_candidates": total,
+        "called": called,
         "called_count": called,
+        "pending_call": pending_call,
         "pending_call_count": pending_call,
+        "closed_count": closed_count,
+        "follow_ups": follow_ups,
         "follow_ups_count": follow_ups,
-        "escalated_count": escalated,
+        "pending_reviews": len(pending_reviews),
         "pending_reviews_count": len(pending_reviews),
+        "escalated_count": escalated,
+        "portals": portals,
         "portals_breakdown": portals
     })
+
+@app.route('/api/candidates/<int:row_id>/quick_close', methods=['POST'])
+def quick_close_candidate(row_id):
+    try:
+        req_data = request.get_json(silent=True) or {}
+        reason = req_data.get('reason', 'Not interested / Closed via 1-click')
+        today_str = datetime.now().strftime('%Y-%m-%d')
+        
+        updates = {
+            'HR Called': 'Closed - Not Interested',
+            'Open To Work / Active': 'Closed - Not Interested',
+            'Date': today_str,
+            'HR Remarks': reason
+        }
+        updated = excel_mgr.update_candidate(row_id, updates)
+        return jsonify({"success": True, "candidate": updated, "message": "Candidate marked as Closed / Not Interested."})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/candidates', methods=['GET'])
 def get_candidates():

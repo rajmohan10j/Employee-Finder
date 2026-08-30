@@ -33,8 +33,10 @@ const elements = {
     statTotal: document.getElementById('stat-total'),
     statCalled: document.getElementById('stat-called'),
     statPendingCall: document.getElementById('stat-pending-call'),
+    statClosed: document.getElementById('stat-closed'),
     statFollowups: document.getElementById('stat-followups'),
     statReviews: document.getElementById('stat-reviews'),
+    statEscalated: document.getElementById('stat-escalated'),
     badgeTotalCandidates: document.getElementById('badge-total-candidates'),
     badgePendingReviews: document.getElementById('badge-pending-reviews'),
     dotPendingReviews: document.getElementById('dot-pending-reviews'),
@@ -45,6 +47,7 @@ const elements = {
     btnClearSearch: document.getElementById('btn-clear-search'),
     filterStatus: document.getElementById('filter-status'),
     filterPortal: document.getElementById('filter-portal'),
+    filterEscalation: document.getElementById('filter-escalation'),
     resultsCountText: document.getElementById('results-count-text'),
     
     // Review Stage & Reviewers
@@ -58,6 +61,7 @@ const elements = {
     btnCloseCandidateModal: document.getElementById('btn-close-candidate-modal'),
     btnCancelCandidate: document.getElementById('btn-cancel-candidate'),
     btnStageReview: document.getElementById('btn-stage-review'),
+    btnModalQuickClose: document.getElementById('btn-modal-quick-close'),
     
     modalShare: document.getElementById('modal-share'),
     sharePreviewText: document.getElementById('share-preview-text'),
@@ -301,6 +305,28 @@ function setupEventListeners() {
         });
     }
 
+    // Modal Quick Close (Not Interested)
+    if (elements.btnModalQuickClose) {
+        elements.btnModalQuickClose.addEventListener('click', async () => {
+            const rowId = elements.fieldRowId.value;
+            if (!rowId) {
+                elements.fieldHrCalled.value = 'Closed - Not Interested';
+                elements.fieldOpenToWork.value = 'Closed - Not Interested';
+                if (!elements.fieldCallDate.value) {
+                    elements.fieldCallDate.value = new Date().toISOString().split('T')[0];
+                }
+                if (!elements.fieldHrRemarks.value) {
+                    elements.fieldHrRemarks.value = 'Candidate Not Interested / Closed';
+                }
+                showToast('Form marked as Closed / Not Interested. Click Save to create record.', 'info');
+                return;
+            }
+            const name = elements.fieldCandidateName.value || 'Candidate';
+            await window.handleQuickClose(rowId, name);
+            closeCandidateModal();
+        });
+    }
+
     // Share Modals
     elements.btnCloseShareModal.addEventListener('click', closeShareModal);
     elements.btnShareCopy.addEventListener('click', handleShareCopy);
@@ -441,15 +467,17 @@ async function fetchStats() {
         const data = await res.json();
         state.stats = data;
 
-        elements.statTotal.textContent = data.total_candidates;
-        elements.statCalled.textContent = data.called_count;
-        elements.statPendingCall.textContent = data.pending_call_count;
-        elements.statFollowups.textContent = data.follow_ups_count;
-        elements.statReviews.textContent = data.pending_reviews_count;
+        if (elements.statTotal) elements.statTotal.textContent = data.total_candidates ?? data.total ?? 0;
+        if (elements.statCalled) elements.statCalled.textContent = data.called_count ?? data.called ?? 0;
+        if (elements.statPendingCall) elements.statPendingCall.textContent = data.pending_call_count ?? data.pending_call ?? 0;
+        if (elements.statClosed) elements.statClosed.textContent = data.closed_count ?? 0;
+        if (elements.statFollowups) elements.statFollowups.textContent = data.follow_ups_count ?? data.follow_ups ?? 0;
+        if (elements.statReviews) elements.statReviews.textContent = data.pending_reviews_count ?? data.pending_reviews ?? 0;
+        if (elements.statEscalated) elements.statEscalated.textContent = data.escalated_count ?? 0;
 
-        elements.badgeTotalCandidates.textContent = data.total_candidates;
-        elements.badgePendingReviews.textContent = data.pending_reviews_count;
-        elements.dotPendingReviews.style.display = data.pending_reviews_count > 0 ? 'block' : 'none';
+        if (elements.badgeTotalCandidates) elements.badgeTotalCandidates.textContent = data.total_candidates ?? data.total ?? 0;
+        if (elements.badgePendingReviews) elements.badgePendingReviews.textContent = data.pending_reviews_count ?? 0;
+        if (elements.dotPendingReviews) elements.dotPendingReviews.style.display = (data.pending_reviews_count > 0) ? 'block' : 'none';
     } catch (err) {
         console.error('Stats error:', err);
     }
@@ -584,20 +612,23 @@ function renderCandidatesList(candidates) {
     elements.candidatesList.innerHTML = candidates.map(c => {
         const hrCalledRaw = (c['HR Called'] || '').trim();
         const openToWorkRaw = (c['Open To Work / Active'] || '').trim();
-        const isNotInterested = hrCalledRaw.toLowerCase().includes('not interested') || openToWorkRaw.toLowerCase().includes('not interested');
-        const isCalled = hrCalledRaw.toLowerCase().startsWith('yes');
+        const isNotInterested = hrCalledRaw.toLowerCase().includes('not interested') || openToWorkRaw.toLowerCase().includes('not interested') || hrCalledRaw.toLowerCase().includes('closed') || openToWorkRaw.toLowerCase().includes('closed');
+        const isCalled = hrCalledRaw.toLowerCase().startsWith('yes') && !isNotInterested;
         
         let statusClass = 'pill-pending';
         let statusText = hrCalledRaw || 'Not Called';
         if (isNotInterested) {
             statusClass = 'pill-not-interested';
-            statusText = hrCalledRaw.toLowerCase().startsWith('yes') ? 'Called (Not Interested)' : 'Not Interested';
+            statusText = 'Closed (Not Interested)';
         } else if (isCalled) {
             statusClass = 'pill-called';
             statusText = 'Called (Yes)';
-        } else if (hrCalledRaw.toLowerCase().includes('busy') || hrCalledRaw.toLowerCase().includes('not reachable')) {
+        } else if (hrCalledRaw.toLowerCase().includes('busy') || hrCalledRaw.toLowerCase().includes('call later') || hrCalledRaw.toLowerCase().includes('call back')) {
             statusClass = 'pill-not-reachable';
-            statusText = hrCalledRaw;
+            statusText = 'Busy / Call Later';
+        } else if (hrCalledRaw.toLowerCase().includes('not reachable') || hrCalledRaw.toLowerCase().includes('rnr') || hrCalledRaw.toLowerCase().includes('not connected')) {
+            statusClass = 'pill-not-reachable';
+            statusText = 'Not Reachable';
         }
 
         const phone = c['Phone Number'] || 'Not provided';
@@ -625,10 +656,14 @@ function renderCandidatesList(candidates) {
                     <h3 class="card-candidate-name">${escapeHtml(c['Candidate Name'] || 'Unnamed Candidate')}</h3>
                     <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                         ${hasEscalation ? `
-                            <span class="${escBadgeClass}" title="Escalated to ${escapeHtml(escLevel)} (${escapeHtml(escAction)})">
+                            <span class="${escBadgeClass}" onclick="event.stopPropagation(); quickOpenEscalation(${c._row_id})" title="Escalated to ${escapeHtml(escLevel)} (${escapeHtml(escAction)}) - Click to edit">
                                 <i class="fa-solid fa-triangle-exclamation"></i> ${escapeHtml(escLevel.split(' - ')[0] || escLevel)}: ${escapeHtml(escAction || 'Action')}
                             </span>
-                        ` : ''}
+                        ` : `
+                            <button type="button" class="btn-quick-esc" onclick="event.stopPropagation(); quickOpenEscalation(${c._row_id})" title="Click to Escalate to L1, L2, L3, or L4">
+                                <i class="fa-solid fa-bolt"></i> Escalate (L1-L4)
+                            </button>
+                        `}
                         <span class="card-portal-badge">${escapeHtml(portal)}</span>
                     </div>
                 </div>
@@ -666,11 +701,16 @@ function renderCandidatesList(candidates) {
 
                 <div class="card-status-row">
                     <span class="status-pill ${statusClass}">
-                        <i class="fa-solid ${isCalled ? 'fa-circle-check' : 'fa-clock'}"></i>
+                        <i class="fa-solid ${isNotInterested ? 'fa-ban' : (isCalled ? 'fa-circle-check' : 'fa-clock')}"></i>
                         ${escapeHtml(statusText)}
                     </span>
 
                     <div class="card-actions">
+                        ${!isNotInterested ? `
+                            <button class="btn-card-action btn-action-close" style="color:#ef4444;" onclick="event.stopPropagation(); handleQuickClose(${c._row_id}, '${escapeHtml(c['Candidate Name'])}')" title="1-Click Mark Closed (Not Interested)">
+                                <i class="fa-solid fa-ban"></i>
+                            </button>
+                        ` : ''}
                         ${!isPhoneMasked ? `
                             <button class="btn-card-action call" onclick="triggerCall('${escapeHtml(phone)}')" title="Direct Phone Call">
                                 <i class="fa-solid fa-phone"></i>
@@ -713,6 +753,38 @@ window.triggerWhatsApp = function(phone, name) {
 window.openShareModalByRowId = function(rowId) {
     const cand = state.candidates.find(c => c._row_id == rowId);
     if (cand) openShareModal(cand);
+};
+
+window.handleQuickClose = async function(rowId, name) {
+    if (!confirm(`Mark "${name}" as Closed / Not Interested?\n\nThis will update Excel and set status to Closed immediately.`)) {
+        return;
+    }
+    try {
+        const res = await fetch(`${API_BASE}/candidates/${rowId}/quick_close`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: 'Candidate Not Interested / Closed via 1-click' })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`Marked "${name}" as Closed / Not Interested!`, 'success');
+            fetchAllData(false);
+        } else {
+            showToast(`Error closing candidate: ${data.error}`, 'error');
+        }
+    } catch (err) {
+        showToast(`Failed to update status: ${err.message}`, 'error');
+    }
+};
+
+window.quickOpenEscalation = function(rowId) {
+    openCandidateModal(rowId);
+    setTimeout(() => {
+        if (elements.fieldEscalationLevel) {
+            elements.fieldEscalationLevel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            elements.fieldEscalationLevel.focus();
+        }
+    }, 200);
 };
 
 // ==========================================================================
