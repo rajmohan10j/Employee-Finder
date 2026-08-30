@@ -949,23 +949,25 @@ html, body {
 .box-item select,
 .box-item textarea {
     width: 100%;
-    padding: 7px 10px;
+    padding: 8px 12px;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     color: var(--text-primary);
-    font-size: 12.5px;
+    font-size: 13px;
+    line-height: 1.4;
+    box-sizing: border-box;
     outline: none;
     transition: var(--transition);
 }
 
 .box-item input:not([type="date"]),
 .box-item select {
-    height: 35px;
+    min-height: 38px;
 }
 
 .box-item textarea {
-    min-height: 44px;
+    min-height: 48px;
     resize: vertical;
 }
 
@@ -1529,21 +1531,31 @@ html, body {
         gap: 14px;
     }
 
-    .box-grid {
+    .box-grid, .box-grid-3, .box-grid-4 {
         display: flex !important;
         flex-direction: column !important;
         width: 100% !important;
-        gap: 10px !important;
+        gap: 12px !important;
     }
 
-    .box-span-2 {
-        grid-column: span 1;
+    .box-span-2, .box-span-desk-2, .box-span-desk-3, .box-span-desk-4 {
+        grid-column: span 1 !important;
     }
 
     .box-item {
         width: 100% !important;
         max-width: 100% !important;
-        box-sizing: border-box;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 5px !important;
+    }
+
+    .box-item label {
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
+        color: var(--text-secondary) !important;
+        margin-bottom: 2px !important;
     }
 
     .box-item input,
@@ -1552,19 +1564,44 @@ html, body {
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
-        font-size: 16px !important; /* Prevents auto zoom jump in mobile browsers */
-        padding: 10px 12px !important;
+        font-size: 14.5px !important;
+        min-height: 44px !important;
+        height: auto !important;
+        line-height: 1.4 !important;
+        padding: 9px 12px !important;
+        border-radius: 8px !important;
+    }
+
+    .box-item select {
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+        background-size: 16px !important;
+        padding-right: 36px !important;
+    }
+
+    .box-item textarea {
+        min-height: 65px !important;
     }
 
     .input-with-actions {
         width: 100% !important;
         display: flex !important;
         gap: 6px !important;
+        align-items: stretch !important;
     }
 
     .input-with-actions input {
         min-width: 0 !important;
         flex: 1 !important;
+    }
+
+    .action-btn {
+        min-width: 42px !important;
+        height: 44px !important;
+        border-radius: 8px !important;
     }
 
     .modal-footer {
