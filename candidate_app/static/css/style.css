@@ -809,7 +809,7 @@ html, body {
     border-radius: var(--radius-lg);
     width: 100%;
     max-width: 520px;
-    max-height: 90vh;
+    max-height: 94vh;
     display: flex;
     flex-direction: column;
     box-shadow: var(--shadow-lg);
@@ -818,7 +818,8 @@ html, body {
 }
 
 .modal-card.modal-lg {
-    max-width: 840px;
+    max-width: 1060px;
+    width: 95vw;
 }
 
 @keyframes modalIn {
@@ -827,7 +828,7 @@ html, body {
 }
 
 .modal-header {
-    padding: 18px 24px;
+    padding: 12px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -837,8 +838,8 @@ html, body {
 .modal-header-title {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 18px;
+    gap: 8px;
+    font-size: 16px;
     font-weight: 700;
 }
 
@@ -861,40 +862,63 @@ html, body {
 }
 
 .modal-body {
-    padding: 24px;
+    padding: 14px 20px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 10px;
 }
 
 .modal-footer {
-    padding: 16px 24px;
+    padding: 10px 20px;
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
 }
 
 /* Box Item Form Elements */
 .form-section-title {
-    font-size: 13px;
+    font-size: 11.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-muted);
-    margin-top: 10px;
-    margin-bottom: 4px;
+    margin-top: 6px;
+    margin-bottom: 2px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    padding-bottom: 3px;
 }
 
 .box-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
+    gap: 8px 12px;
+}
+
+@media (min-width: 900px) {
+    .box-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px 12px;
+    }
+    .box-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px 12px;
+    }
+    .box-span-desk-2 {
+        grid-column: span 2;
+    }
+    .box-span-desk-3 {
+        grid-column: span 3;
+    }
+    .box-span-desk-4 {
+        grid-column: span 4;
+    }
 }
 
 .box-span-2 {
@@ -904,20 +928,20 @@ html, body {
 .box-item {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
 .box-item label {
-    font-size: 12px;
+    font-size: 11.5px;
     font-weight: 600;
     color: var(--text-secondary);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .box-item label i {
-    font-size: 11px;
+    font-size: 10.5px;
     color: var(--primary);
 }
 
@@ -925,26 +949,36 @@ html, body {
 .box-item select,
 .box-item textarea {
     width: 100%;
-    padding: 10px 12px;
+    padding: 7px 10px;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: 6px;
     color: var(--text-primary);
-    font-size: 13px;
+    font-size: 12.5px;
     outline: none;
     transition: var(--transition);
+}
+
+.box-item input:not([type="date"]),
+.box-item select {
+    height: 35px;
+}
+
+.box-item textarea {
+    min-height: 44px;
+    resize: vertical;
 }
 
 .box-item input:focus,
 .box-item select:focus,
 .box-item textarea:focus {
     border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px var(--primary-glow);
+    box-shadow: 0 0 0 2px var(--primary-glow);
 }
 
 .input-with-actions {
     display: flex;
-    gap: 6px;
+    gap: 5px;
 }
 
 .input-with-actions input {
@@ -957,9 +991,9 @@ html, body {
 }
 
 .action-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: var(--radius-md);
+    width: 35px;
+    height: 35px;
+    border-radius: 6px;
     border: 1px solid var(--border-color);
     background: rgba(255, 255, 255, 0.05);
     color: var(--text-secondary);
@@ -968,11 +1002,12 @@ html, body {
     justify-content: center;
     cursor: pointer;
     transition: var(--transition);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .action-btn.call:hover { background: var(--success); color: #fff; }
 .action-btn.whatsapp:hover { background: var(--whatsapp); color: #fff; }
+.action-btn.email:hover { background: var(--primary); color: #fff; }
 .action-btn.email:hover { background: #ea4335; color: #fff; }
 .action-btn.doc:hover { background: var(--primary); color: #fff; }
 

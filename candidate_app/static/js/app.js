@@ -663,7 +663,7 @@ function renderCandidatesList(candidates) {
         else if (escLevel.startsWith('L4')) escBadgeClass = 'badge-escalation badge-escalation-l4';
 
         return `
-            <div class="candidate-card" data-row-id="${c._row_id}">
+            <div class="candidate-card" data-row-id="${c._row_id}" onclick="openCandidateModal(${c._row_id})" style="cursor: pointer;">
                 <div class="card-top">
                     <h3 class="card-candidate-name">${escapeHtml(c['Candidate Name'] || 'Unnamed Candidate')}</h3>
                     <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
@@ -724,17 +724,17 @@ function renderCandidatesList(candidates) {
                             </button>
                         ` : ''}
                         ${!isPhoneMasked ? `
-                            <button class="btn-card-action call" onclick="triggerCall('${escapeHtml(phone)}')" title="Direct Phone Call">
+                            <button class="btn-card-action call" onclick="event.stopPropagation(); triggerCall('${escapeHtml(phone)}')" title="Direct Phone Call">
                                 <i class="fa-solid fa-phone"></i>
                             </button>
-                            <button class="btn-card-action wa" onclick="triggerWhatsApp('${escapeHtml(phone)}', '${escapeHtml(c['Candidate Name'])}')" title="Send WhatsApp">
+                            <button class="btn-card-action wa" onclick="event.stopPropagation(); triggerWhatsApp('${escapeHtml(phone)}', '${escapeHtml(c['Candidate Name'])}')" title="Send WhatsApp">
                                 <i class="fa-brands fa-whatsapp"></i>
                             </button>
                         ` : ''}
-                        <button class="btn-card-action" onclick="openShareModalByRowId(${c._row_id})" title="Share with Lead / Next Level">
+                        <button class="btn-card-action" onclick="event.stopPropagation(); openShareModalByRowId(${c._row_id})" title="Share with Lead / Next Level">
                             <i class="fa-solid fa-share-nodes"></i>
                         </button>
-                        <button class="btn-card-action" onclick="openCandidateModal(${c._row_id})" title="Edit Box Items">
+                        <button class="btn-card-action" onclick="event.stopPropagation(); openCandidateModal(${c._row_id})" title="Edit Box Items">
                             <i class="fa-solid fa-pen-to-square"></i>
                         </button>
                     </div>
@@ -802,7 +802,7 @@ window.quickOpenEscalation = function(rowId) {
 // ==========================================================================
 // Box Item Form Editor Logic
 // ==========================================================================
-function openCandidateModal(rowId) {
+window.openCandidateModal = function(rowId) {
     state.currentCandidate = rowId ? state.candidates.find(c => c._row_id == rowId) : null;
     
     elements.formModalTitle.textContent = state.currentCandidate 

@@ -19,7 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Local Self-Hosted FontAwesome (Guaranteed to render offline/LAN on mobile & desktop) -->
     <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/style.css?v=7">
     <!-- Local Pure JS QR Code Library -->
     <script src="/static/vendor/qrcode.min.js"></script>
 </head>
@@ -337,8 +337,8 @@
                     <div class="form-section-title">
                         <i class="fa-solid fa-user-tag"></i> Identity & Portal Sourcing
                     </div>
-                    <div class="box-grid">
-                        <div class="box-item box-span-2">
+                    <div class="box-grid box-grid-4">
+                        <div class="box-item box-span-desk-2">
                             <label for="field-candidate-name"><i class="fa-solid fa-user"></i> Candidate Name / Role Title *</label>
                             <input type="text" id="field-candidate-name" required placeholder="e.g. John Doe - AI Engineer">
                         </div>
@@ -370,7 +370,7 @@
                     <div class="form-section-title">
                         <i class="fa-solid fa-address-card"></i> Contact & Location
                     </div>
-                    <div class="box-grid">
+                    <div class="box-grid box-grid-4">
                         <div class="box-item">
                             <label for="field-phone"><i class="fa-solid fa-phone"></i> Phone Number</label>
                             <div class="input-with-actions">
@@ -410,7 +410,7 @@
                     <div class="form-section-title">
                         <i class="fa-solid fa-folder-open"></i> System & File Records
                     </div>
-                    <div class="box-grid">
+                    <div class="box-grid box-grid-3">
                         <div class="box-item">
                             <label for="field-pdf-file"><i class="fa-solid fa-file-pdf"></i> PDF File Name</label>
                             <input type="text" id="field-pdf-file" placeholder="e.g. Resume_Candidate.pdf">
@@ -419,7 +419,7 @@
                             <label for="field-resume-file"><i class="fa-solid fa-file-lines"></i> Resume File Name</label>
                             <input type="text" id="field-resume-file" placeholder="e.g. Profile_Details.docx">
                         </div>
-                        <div class="box-item box-span-2">
+                        <div class="box-item">
                             <label for="field-processed-timestamp"><i class="fa-solid fa-clock"></i> Processed Timestamp</label>
                             <input type="text" id="field-processed-timestamp" placeholder="YYYY-MM-DD HH:MM:SS">
                         </div>
@@ -429,7 +429,7 @@
                     <div class="form-section-title">
                         <i class="fa-solid fa-headset"></i> HR Calling Status & Follow-up
                     </div>
-                    <div class="box-grid">
+                    <div class="box-grid box-grid-3">
                         <div class="box-item">
                             <label for="field-hr-called"><i class="fa-solid fa-phone-volume"></i> HR Called Status</label>
                             <select id="field-hr-called">
@@ -445,15 +445,17 @@
                             <label for="field-call-date" id="label-call-date"><i class="fa-solid fa-calendar-day"></i> Call Date <span id="call-date-required" style="color:#ef4444; font-weight:bold; display:none;">* (Mandatory)</span></label>
                             <input type="date" id="field-call-date">
                         </div>
-                        <div class="box-item box-span-2">
-                            <label for="field-hr-remarks"><i class="fa-solid fa-comment-dots"></i> HR Remarks</label>
-                            <textarea id="field-hr-remarks" rows="2" placeholder="Enter notes from call, discussion, candidate expectations..."></textarea>
-                        </div>
                         <div class="box-item">
                             <label for="field-followup-date"><i class="fa-solid fa-calendar-check"></i> Follow-up Date</label>
                             <input type="date" id="field-followup-date">
                         </div>
-                        <div class="box-item box-span-2">
+                    </div>
+                    <div class="box-grid" style="margin-top: 6px;">
+                        <div class="box-item">
+                            <label for="field-hr-remarks"><i class="fa-solid fa-comment-dots"></i> HR Remarks</label>
+                            <textarea id="field-hr-remarks" rows="2" placeholder="Enter notes from call, discussion, candidate expectations..."></textarea>
+                        </div>
+                        <div class="box-item">
                             <label for="field-followup-remarks"><i class="fa-solid fa-comments"></i> HR Follow-up Remarks</label>
                             <textarea id="field-followup-remarks" rows="2" placeholder="Notes for next follow-up action..."></textarea>
                         </div>
@@ -463,7 +465,7 @@
                     <div class="form-section-title" style="color: #fbbf24; border-bottom: 2px solid rgba(245, 158, 11, 0.3);">
                         <i class="fa-solid fa-triangle-exclamation"></i> ⚡ Task Escalation & Action Assignment (L1 to L4)
                     </div>
-                    <div class="box-grid" style="background: rgba(245, 158, 11, 0.04); border-radius: 8px; padding: 12px; border: 1px dashed rgba(245, 158, 11, 0.25);">
+                    <div class="box-grid" style="background: rgba(245, 158, 11, 0.04); border-radius: 8px; padding: 10px; border: 1px dashed rgba(245, 158, 11, 0.25);">
                         <div class="box-item">
                             <label for="field-escalation-level" style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-user-shield"></i> Task / Assigned To:</label>
                             <select id="field-escalation-level" style="border-color: rgba(245, 158, 11, 0.4);">
@@ -649,6 +651,6 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="/static/js/app.js?v=5"></script>
+    <script src="/static/js/app.js?v=7"></script>
 </body>
 </html>
