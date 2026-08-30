@@ -342,70 +342,82 @@ function setupEventListeners() {
     });
 
     // Quick contact buttons in candidate form
-    elements.btnQuickCall.addEventListener('click', () => {
-        const phone = elements.fieldPhone.value.trim();
-        if (phone && phone !== 'Masked by Portal' && !phone.includes('Masked')) {
-            window.open(`tel:${phone.replace(/[^0-9+]/g, '')}`);
-        } else {
-            showToast('No valid direct phone number available', 'error');
-        }
-    });
+    if (elements.btnQuickCall) {
+        elements.btnQuickCall.addEventListener('click', () => {
+            const phone = elements.fieldPhone.value.trim();
+            if (phone && phone !== 'Masked by Portal' && !phone.includes('Masked')) {
+                window.open(`tel:${phone.replace(/[^0-9+]/g, '')}`);
+            } else {
+                showToast('No valid direct phone number available', 'error');
+            }
+        });
+    }
 
-    elements.btnQuickWa.addEventListener('click', () => {
-        const phone = elements.fieldPhone.value.trim();
-        const candName = elements.fieldCandidateName.value.trim();
-        if (phone && phone !== 'Masked by Portal' && !phone.includes('Masked')) {
-            const clean = phone.replace(/[^0-9]/g, '');
-            const msg = encodeURIComponent(`Hi ${candName}, I am contacting you regarding an exciting career opportunity.`);
-            window.open(`https://wa.me/${clean}?text=${msg}`, '_blank');
-        } else {
-            showToast('No valid direct phone number available for WhatsApp', 'error');
-        }
-    });
+    if (elements.btnQuickWa) {
+        elements.btnQuickWa.addEventListener('click', () => {
+            const phone = elements.fieldPhone.value.trim();
+            const candName = elements.fieldCandidateName.value.trim();
+            if (phone && phone !== 'Masked by Portal' && !phone.includes('Masked')) {
+                const clean = phone.replace(/[^0-9]/g, '');
+                const msg = encodeURIComponent(`Hi ${candName}, I am contacting you regarding an exciting career opportunity.`);
+                window.open(`https://wa.me/${clean}?text=${msg}`, '_blank');
+            } else {
+                showToast('No valid direct phone number available for WhatsApp', 'error');
+            }
+        });
+    }
 
-    elements.btnQuickEmail.addEventListener('click', () => {
-        const email = elements.fieldEmail.value.trim();
-        const candName = elements.fieldCandidateName.value.trim();
-        if (email) {
-            const subject = encodeURIComponent(`Career Opportunity - Discussion with ${candName}`);
-            const body = encodeURIComponent(`Hi ${candName},\n\nWe came across your profile and would love to connect with you regarding job opportunities.\n\nBest regards,\nRaj`);
-            window.open(`mailto:${email}?subject=${subject}&body=${body}`);
-        } else {
-            showToast('No valid email address entered', 'error');
-        }
-    });
+    if (elements.btnQuickEmail) {
+        elements.btnQuickEmail.addEventListener('click', () => {
+            const email = elements.fieldEmail.value.trim();
+            const candName = elements.fieldCandidateName.value.trim();
+            if (email) {
+                const subject = encodeURIComponent(`Career Opportunity - Discussion with ${candName}`);
+                const body = encodeURIComponent(`Hi ${candName},\n\nWe came across your profile and would love to connect with you regarding job opportunities.\n\nBest regards,\nRaj`);
+                window.open(`mailto:${email}?subject=${subject}&body=${body}`);
+            } else {
+                showToast('No valid email address entered', 'error');
+            }
+        });
+    }
 
-    elements.btnViewPdf.addEventListener('click', () => {
-        const pdf = elements.fieldPdfFile.value.trim();
-        if (pdf) {
-            window.open(`${API_BASE}/resumes/${encodeURIComponent(pdf)}`, '_blank');
-        } else {
-            showToast('No PDF file name specified', 'error');
-        }
-    });
+    if (elements.btnViewPdf) {
+        elements.btnViewPdf.addEventListener('click', () => {
+            const pdf = elements.fieldPdfFile.value.trim();
+            if (pdf) {
+                window.open(`${API_BASE}/resumes/${encodeURIComponent(pdf)}`, '_blank');
+            } else {
+                showToast('No PDF file name specified', 'error');
+            }
+        });
+    }
 
-    elements.btnViewResume.addEventListener('click', () => {
-        const res = elements.fieldResumeFile.value.trim();
-        if (res) {
-            window.open(`${API_BASE}/resumes/${encodeURIComponent(res)}`, '_blank');
-        } else {
-            showToast('No Resume file name specified', 'error');
-        }
-    });
+    if (elements.btnViewResume) {
+        elements.btnViewResume.addEventListener('click', () => {
+            const res = elements.fieldResumeFile.value.trim();
+            if (res) {
+                window.open(`${API_BASE}/resumes/${encodeURIComponent(res)}`, '_blank');
+            } else {
+                showToast('No Resume file name specified', 'error');
+            }
+        });
+    }
 
     // Reviewer Management
-    elements.btnAddReviewer.addEventListener('click', openReviewerModal);
-    elements.btnCloseReviewerModal.addEventListener('click', closeReviewerModal);
-    elements.btnCancelReviewer.addEventListener('click', closeReviewerModal);
-    elements.reviewerForm.addEventListener('submit', handleReviewerSave);
+    if (elements.btnAddReviewer) elements.btnAddReviewer.addEventListener('click', openReviewerModal);
+    if (elements.btnCloseReviewerModal) elements.btnCloseReviewerModal.addEventListener('click', closeReviewerModal);
+    if (elements.btnCancelReviewer) elements.btnCancelReviewer.addEventListener('click', closeReviewerModal);
+    if (elements.reviewerForm) elements.reviewerForm.addEventListener('submit', handleReviewerSave);
 
     // Copy Mobile URL
-    elements.btnCopyUrl.addEventListener('click', () => {
-        const url = elements.mobileUrlInput.value;
-        navigator.clipboard.writeText(url).then(() => {
-            showToast('Mobile URL copied to clipboard!', 'success');
+    if (elements.btnCopyUrl) {
+        elements.btnCopyUrl.addEventListener('click', () => {
+            const url = elements.mobileUrlInput.value;
+            navigator.clipboard.writeText(url).then(() => {
+                showToast('Mobile URL copied to clipboard!', 'success');
+            });
         });
-    });
+    }
 }
 
 function switchTab(tab) {
