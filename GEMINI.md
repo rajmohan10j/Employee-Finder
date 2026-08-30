@@ -20,3 +20,13 @@ For every feature addition, UI change, Excel sync update, bug fix, or code modif
    - **Automatic Masking & Anonymization**: All tracked sample data files (`.xlsx`, `.json`, `.csv`) must strictly use realistic mock/dummy data (`@example.com`, `+91 98765 0000X`).
    - **Local Backup Protection**: Real user data must be backed up exclusively to `local_private_backup/` or `private_data/` (both enforced in `.gitignore`).
    - **Mandatory Pre-Commit Sanitization**: Follow the `git-privacy-sanitizer` skill before every `git commit` or `git push`.
+
+4. **Mandatory Frontend Null-Safety & Zero-Crash Policy**:
+   - **Zero Unhandled Listener Exceptions**: Every single DOM event listener attachment in JavaScript MUST be guarded with an `if (elements.xxx)` null check to prevent breaking runtime initialization when modal or DOM structures evolve.
+   - **Headless Console Error Verification**: Automated tests must actively listen for `pageerror` and `console.error` events, asserting that ZERO unhandled exceptions occur during DOM load and rendering.
+   - **Version Query Cache Busting**: Always maintain cache-busting query strings on `/static/js/app.js?v=X` and `/static/css/style.css?v=X` in `index.html` whenever frontend code is updated.
+
+5. **Mandatory Master Dataset Preservation & Auto-Restoration Policy**:
+   - **Complete Working Dataset**: The live database `candidates_tracker.xlsx` must ALWAYS contain the full, genuine user candidate records (all rows + genuine recruiter call notes) during active usage.
+   - **Post-Commit Immediate Restoration**: If a sanitized sample file was staged for Git commit/push, immediately restore the master unmasked dataset from `local_private_backup/candidates_tracker_real.xlsx` back to `candidates_tracker.xlsx` so the user's active session is never interrupted or reverted to mock data.
+
