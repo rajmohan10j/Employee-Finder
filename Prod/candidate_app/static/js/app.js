@@ -87,6 +87,13 @@ const elements = {
     btnSubmitImport: document.getElementById('btn-submit-import'),
     importFileInput: document.getElementById('import-file-input'),
     importModeSelect: document.getElementById('import-mode-select'),
+
+    // Security Confirm Close Modal
+    modalConfirmClose: document.getElementById('modal-confirm-close'),
+    confirmCloseCandidateName: document.getElementById('confirm-close-candidate-name'),
+    btnCancelConfirmClose: document.getElementById('btn-cancel-confirm-close'),
+    btnCancelConfirmCloseX: document.getElementById('btn-cancel-confirm-close-x'),
+    btnConfirmCloseExecute: document.getElementById('btn-confirm-close-execute'),
     
     // Filters
     filterStatus: document.getElementById('filter-status'),
@@ -320,9 +327,10 @@ function setupEventListeners() {
         });
     }
 
-    // Modal Quick Close (Not Interested)
+    // Modal Quick Close (Not Interested) - Opens Security Double-Confirmation
     if (elements.btnModalQuickClose) {
-        elements.btnModalQuickClose.addEventListener('click', async () => {
+        elements.btnModalQuickClose.addEventListener('click', (e) => {
+            e.preventDefault();
             const rowId = elements.fieldRowId.value;
             if (!rowId) {
                 elements.fieldHrCalled.value = 'Closed - Not Interested';
@@ -337,8 +345,44 @@ function setupEventListeners() {
                 return;
             }
             const name = elements.fieldCandidateName.value || 'Candidate';
-            await window.handleQuickClose(rowId, name);
-            closeCandidateModal();
+            window.handleQuickClose(rowId, name);
+        });
+    }
+
+    // Security Confirm Close Modal Listeners
+    if (elements.btnCancelConfirmClose) {
+        elements.btnCancelConfirmClose.addEventListener('click', () => {
+            window.closeConfirmCloseModal();
+        });
+    }
+    if (elements.btnCancelConfirmCloseX) {
+        elements.btnCancelConfirmCloseX.addEventListener('click', () => {
+            window.closeConfirmCloseModal();
+        });
+    }
+    if (elements.btnConfirmCloseExecute) {
+        elements.btnConfirmCloseExecute.addEventListener('click', async () => {
+            if (!state.pendingCloseCandidate) return;
+            const { rowId, name } = state.pendingCloseCandidate;
+            window.closeConfirmCloseModal();
+
+            try {
+                const res = await fetch(`${API_BASE}/candidates/${rowId}/quick_close`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ reason: 'Candidate Not Interested / Closed via 1-click' })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Marked "${name}" as Closed / Not Interested!`, 'success');
+                    closeCandidateModal();
+                    fetchAllData(false);
+                } else {
+                    showToast(`Error closing candidate: ${data.error}`, 'error');
+                }
+            } catch (err) {
+                showToast(`Failed to update status: ${err.message}`, 'error');
+            }
         });
     }
 
@@ -819,26 +863,25 @@ window.openShareModalByRowId = function(rowId) {
     if (cand) openShareModal(cand);
 };
 
-window.handleQuickClose = async function(rowId, name) {
-    if (!confirm(`Mark "${name}" as Closed / Not Interested?\n\nThis will update Excel and set status to Closed immediately.`)) {
-        return;
+window.openConfirmCloseModal = function(rowId, name) {
+    state.pendingCloseCandidate = { rowId, name };
+    if (elements.confirmCloseCandidateName) {
+        elements.confirmCloseCandidateName.textContent = name ? `"${name}"` : 'this candidate';
     }
-    try {
-        const res = await fetch(`${API_BASE}/candidates/${rowId}/quick_close`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ reason: 'Candidate Not Interested / Closed via 1-click' })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showToast(`Marked "${name}" as Closed / Not Interested!`, 'success');
-            fetchAllData(false);
-        } else {
-            showToast(`Error closing candidate: ${data.error}`, 'error');
-        }
-    } catch (err) {
-        showToast(`Failed to update status: ${err.message}`, 'error');
+    if (elements.modalConfirmClose) {
+        elements.modalConfirmClose.style.display = 'flex';
     }
+};
+
+window.closeConfirmCloseModal = function() {
+    state.pendingCloseCandidate = null;
+    if (elements.modalConfirmClose) {
+        elements.modalConfirmClose.style.display = 'none';
+    }
+};
+
+window.handleQuickClose = function(rowId, name) {
+    window.openConfirmCloseModal(rowId, name);
 };
 
 window.quickOpenEscalation = function(rowId) {

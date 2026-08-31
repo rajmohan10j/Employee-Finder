@@ -656,20 +656,29 @@
                         </div>
                     </div>
 
-                    <div class="modal-footer" style="display:flex; flex-wrap:wrap; gap:8px;">
-                        <button type="button" class="btn btn-secondary" id="btn-cancel-candidate">Cancel</button>
-                        <button type="button" class="btn btn-accent" id="btn-share-candidate-modal">
-                            <i class="fa-solid fa-share-nodes"></i> Share
-                        </button>
-                        <button type="button" class="btn btn-danger" id="btn-modal-quick-close" style="background:#dc2626; color:#fff; border:none;" title="Quick Close / Mark Candidate Not Interested">
-                            <i class="fa-solid fa-ban"></i> Close Candidate (Not Interested)
-                        </button>
-                        <button type="button" class="btn btn-outline" id="btn-stage-review">
-                            <i class="fa-solid fa-code-pull-request"></i> Submit for Review
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="btn-save-candidate">
-                            <i class="fa-solid fa-floppy-disk"></i> Save & Update Master Excel
-                        </button>
+                    <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+                        <!-- Tier 1: Utility & Guarded Danger Action -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-candidate">Cancel</button>
+                                <button type="button" class="btn btn-accent" id="btn-share-candidate-modal">
+                                    <i class="fa-solid fa-share-nodes"></i> Share
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-danger-outline" id="btn-modal-quick-close" style="border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08); color: #f87171; font-size: 12px; padding: 7px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" title="Quick Close / Mark Candidate Not Interested">
+                                <i class="fa-solid fa-ban"></i> Close (Not Interested)
+                            </button>
+                        </div>
+
+                        <!-- Tier 2: Primary Constructive Actions (Clean Thumb Zone) -->
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button type="button" class="btn btn-outline" id="btn-stage-review" style="flex: 1;">
+                                <i class="fa-solid fa-code-pull-request"></i> Submit for Review
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btn-save-candidate" style="flex: 1.4; font-weight: 600; font-size: 14px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save & Update Master Excel
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -794,9 +803,40 @@
         </div>
     </div>
 
+    <!-- MODAL 6: Double-Confirmation Security Modal for Candidate Closure -->
+    <div class="modal-overlay" id="modal-confirm-close" style="display:none; z-index: 1200;">
+        <div class="modal-card" style="max-width: 440px; border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.08);">
+                <div class="modal-header-title" style="color: #f87171;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <h3>Confirm Candidate Closure</h3>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-cancel-confirm-close-x">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 16px;">
+                <p style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">
+                    Are you sure you want to mark <strong id="confirm-close-candidate-name" style="color: #60a5fa;">this candidate</strong> as <strong>Closed / Not Interested</strong>?
+                </p>
+                <div style="background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; padding: 10px 12px; border-radius: 4px; font-size: 13px; color: #fca5a5; margin-bottom: 18px;">
+                    <i class="fa-solid fa-circle-info"></i> This will immediately update the master Excel tracker and set status to <strong>"Closed - Not Interested"</strong>.
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-confirm-close" style="flex: 1; min-width: 120px;">
+                        <i class="fa-solid fa-arrow-left"></i> Keep Open
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btn-confirm-close-execute" style="flex: 1.2; min-width: 140px; background: #dc2626; color: #fff; border: none;">
+                        <i class="fa-solid fa-ban"></i> Yes, Confirm Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="/static/js/app.js?v=12"></script>
+    <script src="/static/js/app.js?v=13"></script>
 </body>
 </html>
