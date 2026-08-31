@@ -40,7 +40,8 @@ test-results/
 
 # Test screenshots and cache
 .pytest_cache/
-candidate_app/test_screenshots/
+test_screenshots/
+**/test_screenshots/
 
 # Backups & temporary logs
 backups/

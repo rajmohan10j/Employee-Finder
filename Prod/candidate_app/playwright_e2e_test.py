@@ -174,7 +174,7 @@ def run_playwright_tests():
         page.locator('#btn-add-reviewer').click()
         page.wait_for_selector('#modal-reviewer-form', state='visible')
         
-        test_rev_name = f"Lead Reviewer {int(time.time()) % 1000}"
+        test_rev_name = f"Lead Reviewer {int(time.time() * 1000)}"
         page.locator('#rev-name').fill(test_rev_name)
         page.locator('#rev-phone').fill('+91 98888 77777')
         page.locator('#rev-email').fill('test.lead@example.com')
@@ -184,7 +184,7 @@ def run_playwright_tests():
         page.wait_for_selector('#modal-reviewer-form', state='hidden')
         page.wait_for_timeout(500)
         
-        assert page.locator(f'h3:has-text("{test_rev_name}")').is_visible(), "New reviewer card not found"
+        assert page.get_by_role('heading', name=test_rev_name, exact=True).is_visible(), "New reviewer card not found"
         print(f"  ✓ New reviewer contact '{test_rev_name}' created successfully!")
         page.screenshot(path=str(SCREENSHOTS_DIR / "06_reviewer_contacts.png"))
 
