@@ -30,3 +30,8 @@ For every feature addition, UI change, Excel sync update, bug fix, or code modif
    - **Complete Working Dataset**: The live database `candidates_tracker.xlsx` must ALWAYS contain the full, genuine user candidate records (all rows + genuine recruiter call notes) during active usage.
    - **Post-Commit Immediate Restoration**: If a sanitized sample file was staged for Git commit/push, immediately restore the master unmasked dataset from `local_private_backup/candidates_tracker_real.xlsx` back to `candidates_tracker.xlsx` so the user's active session is never interrupted or reverted to mock data.
 
+6. **Mandatory Autonomous Execution & Proactive Goal Completion Policy**:
+   - **Full Proactive Approval**: The agent has standing approval to create, modify, test, build, refactor, and complete tasks end-to-end without pausing for trivial or intermediate confirmation.
+   - **Approval Threshold**: Only pause and request explicit user confirmation for truly critical, non-reversible, or destructive actions (such as permanent deletion of non-backed-up master records or destructive Git branch forces).
+
+

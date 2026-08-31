@@ -44,6 +44,7 @@ candidate_app/test_screenshots/
 
 # Backups & temporary logs
 backups/
+**/backups/
 *.log
 *.tmp
 .DS_Store

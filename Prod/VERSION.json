@@ -1,0 +1,25 @@
+{
+  "project": "Employee-Finder Candidate Tracker",
+  "version": "1.2.0-prod",
+  "release_tag": "v1.2.0-prod",
+  "release_date": "2026-08-31",
+  "environment": "production",
+  "status": "stable",
+  "features": [
+    "Grandfather-Father-Son (GFS) Automated Backup Rotation Engine",
+    "Pre-Connection & Startup Automated Excel Snapshots",
+    "Daily (1PM/6PM), Weekly (Sat 6PM), and Monthly (1st 9AM) Schedules",
+    "SHA-256 Content Hashing & Smart Deduplication",
+    "Atomic Safe File Writes & Re-Entrant Lock Thread-Safety",
+    "Real-time Bidirectional Excel Sync (candidates_tracker.xlsx)",
+    "Android Mobile Touch-Optimized Layout & Dynamic LAN QR Code",
+    "15-Field Box-Item Form Editor with Call Date Auto-Requirement",
+    "4-Level Task Escalation Matrix (L1 to L4) with Action Categories",
+    "Next-Level Formatted WhatsApp & Email Profile Share Generator",
+    "Two-Stage Review & Commit Staging Workflow with Visual Diffs",
+    "Reviewer Contacts Registry and Multi-User Approval Engine",
+    "One-Click Rollback & Instant Database Restore from UI"
+  ],
+  "author": "Raj Mohan",
+  "repository": "https://github.com/rajmohan10j/Employee-Finder"
+}
