@@ -87,6 +87,25 @@ if not REVIEWERS_FILE.exists():
 def index():
     return render_template('index.html')
 
+@app.route('/api/version', methods=['GET'])
+def get_version():
+    version_file = BASE_DIR.parent / "VERSION.json"
+    if not version_file.exists():
+        version_file = BASE_DIR.parent / "Prod" / "VERSION.json"
+    if version_file.exists():
+        try:
+            with open(version_file, 'r', encoding='utf-8') as f:
+                return jsonify(json.load(f))
+        except Exception:
+            pass
+    return jsonify({
+        "project": "Employee-Finder Candidate Tracker",
+        "version": "1.2.0-prod",
+        "environment": "production",
+        "status": "stable",
+        "release_date": "2026-08-31"
+    })
+
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     candidates = excel_mgr.get_all_candidates()
