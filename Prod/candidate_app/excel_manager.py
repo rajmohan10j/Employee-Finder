@@ -290,7 +290,23 @@ class ExcelManager:
                 'follow-up date': 'Follow-up Date',
                 'hr follow up remarks': 'HR Follow-up Remarks',
                 'follow up remarks': 'HR Follow-up Remarks',
-                'followup remarks': 'HR Follow-up Remarks'
+                'followup remarks': 'HR Follow-up Remarks',
+                'escalation level / person': 'Escalation Level / Person',
+                'escalation level person': 'Escalation Level / Person',
+                'escalation level': 'Escalation Level / Person',
+                'escalation person': 'Escalation Level / Person',
+                'escalated to': 'Escalation Level / Person',
+                'task / assigned to': 'Escalation Level / Person',
+                'task assigned to': 'Escalation Level / Person',
+                'assigned to': 'Escalation Level / Person',
+                'escalation action category': 'Escalation Action Category',
+                'escalation action': 'Escalation Action Category',
+                'action category': 'Escalation Action Category',
+                'action': 'Escalation Action Category',
+                'escalation remarks': 'Escalation Remarks',
+                'escalation comments': 'Escalation Remarks',
+                'escalation notes': 'Escalation Remarks',
+                'escalation details': 'Escalation Remarks'
             }
 
             # Open target master workbook

@@ -48,5 +48,6 @@ backups/
 **/backups/
 *.log
 *.tmp
+*.exe
 .DS_Store
 Thumbs.db

@@ -19,13 +19,27 @@ def add_cors_headers(response):
     return response
 
 BASE_DIR = Path(__file__).parent.resolve()
-EXCEL_PATH = Path(r"C:\Users\Raj\Projects\Employee-Finder\candidates_tracker.xlsx")
+PROJECT_ROOT = BASE_DIR.parent if BASE_DIR.name == "candidate_app" else BASE_DIR
+
+# Determine Excel Path dynamically (Environment variable -> Project root -> Absolute Windows fallback)
+env_excel = os.environ.get("EXCEL_PATH")
+if env_excel and Path(env_excel).exists():
+    EXCEL_PATH = Path(env_excel)
+elif (PROJECT_ROOT / "candidates_tracker.xlsx").exists():
+    EXCEL_PATH = PROJECT_ROOT / "candidates_tracker.xlsx"
+elif Path(r"C:\Users\Raj\Projects\Employee-Finder\candidates_tracker.xlsx").exists():
+    EXCEL_PATH = Path(r"C:\Users\Raj\Projects\Employee-Finder\candidates_tracker.xlsx")
+else:
+    EXCEL_PATH = PROJECT_ROOT / "candidates_tracker.xlsx"
+
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 REVIEWERS_FILE = DATA_DIR / "reviewers.json"
 PENDING_REVIEWS_FILE = DATA_DIR / "pending_reviews.json"
 RESUME_DIRS = [
+    PROJECT_ROOT / "resumes",
+    DATA_DIR / "resumes",
     Path(r"C:\Users\Raj\Projects\candidate_data\resumes"),
     Path(r"C:\Users\Raj\Projects\Employee-Finder\resumes")
 ]
@@ -52,21 +66,34 @@ def save_json(filepath, data):
 
 def get_local_ips():
     ips = []
-    try:
-        # Connect to a dummy external IP to determine default gateway interface
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.settimeout(0.2)
-        s.connect(('8.8.8.8', 80))
-        local_ip = s.getsockname()[0]
-        ips.append(local_ip)
-        s.close()
-    except Exception:
-        pass
+    # Probe active gateway interface
+    for probe_target in [('8.8.8.8', 80), ('1.1.1.1', 80), ('192.168.1.1', 80), ('10.0.0.1', 80)]:
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.settimeout(0.5)
+            s.connect(probe_target)
+            local_ip = s.getsockname()[0]
+            s.close()
+            if local_ip and not local_ip.startswith('127.') and not local_ip.startswith('169.254.') and local_ip not in ips:
+                ips.append(local_ip)
+                break
+        except Exception:
+            pass
 
+    # Method 2: Hostname inspection
     try:
         hostname = socket.gethostname()
         for ip in socket.gethostbyname_ex(hostname)[2]:
-            if not ip.startswith('127.') and ip not in ips:
+            if not ip.startswith('127.') and not ip.startswith('169.254.') and ip not in ips:
+                ips.append(ip)
+    except Exception:
+        pass
+
+    # Method 3: Socket address info
+    try:
+        for item in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET):
+            ip = item[4][0]
+            if not ip.startswith('127.') and not ip.startswith('169.254.') and ip not in ips:
                 ips.append(ip)
     except Exception:
         pass

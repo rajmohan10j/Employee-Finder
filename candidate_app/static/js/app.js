@@ -488,6 +488,8 @@ function switchTab(tab) {
 
     if (tab === 'backups') {
         fetchBackups(true);
+    } else if (tab === 'mobile') {
+        fetchNetworkInfo();
     }
 }
 
@@ -501,7 +503,8 @@ async function fetchAllData(showNotification = false) {
             fetchCandidates(),
             fetchReviewers(),
             fetchPendingReviews(),
-            fetchBackups(true)
+            fetchBackups(true),
+            fetchNetworkInfo()
         ]);
         if (showNotification) {
             showToast('Data refreshed successfully from master Excel', 'success');
@@ -534,9 +537,9 @@ async function fetchStats() {
 }
 
 async function fetchCandidates() {
-    const query = elements.searchInput.value.trim();
-    const status = elements.filterStatus.value;
-    const portal = elements.filterPortal.value;
+    const query = elements.searchInput ? elements.searchInput.value.trim() : '';
+    const status = elements.filterStatus ? elements.filterStatus.value : 'All';
+    const portal = elements.filterPortal ? elements.filterPortal.value : 'All';
     const escalation = elements.filterEscalation ? elements.filterEscalation.value : 'All';
 
     const params = new URLSearchParams({ query, status, portal, escalation });
@@ -580,26 +583,37 @@ async function fetchPendingReviews() {
 }
 
 async function fetchNetworkInfo() {
+    if (!elements.mobileUrlInput || !elements.qrcodeContainer) return;
     try {
         const res = await fetch(`${API_BASE}/network_info`);
         const data = await res.json();
         if (data.success) {
             state.networkInfo = data;
-            const primaryUrl = data.primary_url;
+            let primaryUrl = data.primary_url;
+            
+            // If current browser host is already on LAN, prioritize current origin
+            if (window.location.hostname !== '127.0.0.1' && window.location.hostname !== 'localhost' && window.location.port === '5000') {
+                primaryUrl = window.location.origin;
+            }
+
             elements.mobileUrlInput.value = primaryUrl;
             
             elements.qrcodeContainer.innerHTML = '';
-            new QRCode(elements.qrcodeContainer, {
-                text: primaryUrl,
-                width: 190,
-                height: 190,
-                colorDark: '#0b0f17',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M
-            });
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(elements.qrcodeContainer, {
+                    text: primaryUrl,
+                    width: 190,
+                    height: 190,
+                    colorDark: '#0b0f17',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M
+                });
+            }
         }
     } catch (err) {
-        elements.mobileUrlInput.value = window.location.origin;
+        if (elements.mobileUrlInput) {
+            elements.mobileUrlInput.value = window.location.origin;
+        }
     }
 }
 
@@ -864,9 +878,38 @@ window.openCandidateModal = function(rowId) {
         elements.fieldCallDate.value = c['Date'] || '';
         elements.fieldHrRemarks.value = c['HR Remarks'] || '';
         elements.fieldFollowupDate.value = c['Follow-up Date'] || '';
-        elements.fieldFollowupRemarks.value = c['HR Follow-up Remarks'] || '';
-        if (elements.fieldEscalationLevel) elements.fieldEscalationLevel.value = c['Escalation Level / Person'] || 'None / No Escalation';
-        if (elements.fieldEscalationAction) elements.fieldEscalationAction.value = c['Escalation Action Category'] || 'None';
+        if (elements.fieldEscalationLevel) {
+            const rawLevel = (c['Escalation Level / Person'] || '').trim();
+            let matched = false;
+            if (rawLevel) {
+                for (let opt of elements.fieldEscalationLevel.options) {
+                    if (opt.value.toLowerCase() === rawLevel.toLowerCase() || 
+                        opt.value.toLowerCase().startsWith(rawLevel.toLowerCase()) || 
+                        rawLevel.toLowerCase().startsWith(opt.value.toLowerCase().split(' - ')[0])) {
+                        elements.fieldEscalationLevel.value = opt.value;
+                        matched = true;
+                        break;
+                    }
+                }
+            }
+            if (!matched) elements.fieldEscalationLevel.value = rawLevel || 'None / No Escalation';
+        }
+
+        if (elements.fieldEscalationAction) {
+            const rawAction = (c['Escalation Action Category'] || '').trim();
+            let matchedAction = false;
+            if (rawAction) {
+                for (let opt of elements.fieldEscalationAction.options) {
+                    if (opt.value.toLowerCase() === rawAction.toLowerCase()) {
+                        elements.fieldEscalationAction.value = opt.value;
+                        matchedAction = true;
+                        break;
+                    }
+                }
+            }
+            if (!matchedAction) elements.fieldEscalationAction.value = rawAction || 'None';
+        }
+
         if (elements.fieldEscalationRemarks) elements.fieldEscalationRemarks.value = c['Escalation Remarks'] || '';
         elements.fieldAssignReviewer.value = 'Direct Commit';
     } else {
