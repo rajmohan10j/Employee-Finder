@@ -6,15 +6,15 @@
     <meta name="theme-color" content="#1e293b">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Employee Recruitment for Raj - Candidate Tracker</title>
+    <title>Candidate Tracker [UAT Testing & Staging]</title>
     <!-- Social & WhatsApp Rich Link Previews -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Employee Recruitment for Raj">
-    <meta property="og:description" content="Candidate Tracker & Master Recruiter Portal">
-    <meta property="og:site_name" content="Employee Recruitment for Raj">
+    <meta property="og:title" content="Candidate Tracker [UAT Testing]">
+    <meta property="og:description" content="Candidate Tracker & Master Recruiter Portal - UAT Environment">
+    <meta property="og:site_name" content="Candidate Tracker [UAT Testing]">
     <meta name="twitter:card" content="summary">
-    <meta name="twitter:title" content="Employee Recruitment for Raj">
-    <meta name="twitter:description" content="Candidate Tracker & Master Recruiter Portal">
+    <meta name="twitter:title" content="Candidate Tracker [UAT Testing]">
+    <meta name="twitter:description" content="Candidate Tracker & Master Recruiter Portal - UAT Environment">
     <!-- Icons & PWA Manifest -->
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
@@ -26,9 +26,16 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <!-- Local Self-Hosted FontAwesome (Guaranteed to render offline/LAN on mobile & desktop) -->
     <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
-    <link rel="stylesheet" href="/static/css/style.css?v=10">
+    <link rel="stylesheet" href="/static/css/style.css?v=19">
     <!-- Local Pure JS QR Code Library -->
     <script src="/static/vendor/qrcode.min.js"></script>
+    <!-- Local Self-Hosted Chart.js v4 for Offline/LAN Analytics -->
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <script>
+        if (!window.Chart) {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"><\/script>');
+        }
+    </script>
 </head>
 <body class="dark-theme">
     <div class="app-layout">
@@ -41,9 +48,9 @@
                 <div class="brand-info">
                     <div style="display:flex; align-items:center; gap:6px;">
                         <span class="brand-title">CandidateTracker</span>
-                        <span class="badge" style="font-size:10px; font-weight:800; background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:2px 6px; border-radius:4px; letter-spacing:0.5px;">PROD v1.2.0</span>
+                        <span class="badge" style="font-size:10px; font-weight:800; background:rgba(34,197,94,0.2); color:#4ade80; border:1px solid rgba(34,197,94,0.4); padding:2px 6px; border-radius:4px; letter-spacing:0.5px;">PROD v2.0.0</span>
                     </div>
-                    <span class="brand-subtitle">Master Excel Sync & GFS</span>
+                    <span class="brand-subtitle">Master Excel Sync &amp; Analytics</span>
                 </div>
             </div>
 
@@ -62,6 +69,10 @@
                     <i class="fa-solid fa-user-shield"></i>
                     <span>Reviewer Contacts</span>
                 </button>
+                <button class="nav-item" data-tab="analytics" id="nav-analytics">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Analytics</span>
+                </button>
                 <button class="nav-item" data-tab="mobile" id="nav-mobile">
                     <i class="fa-solid fa-mobile-screen-button"></i>
                     <span>Connect Mobile / QR</span>
@@ -75,8 +86,8 @@
 
             <div class="sidebar-footer">
                 <div class="server-status">
-                    <span class="status-dot" style="background:#22c55e; box-shadow: 0 0 8px #22c55e;"></span>
-                    <span class="status-text" style="color:#4ade80; font-weight:600;">Production Live</span>
+                    <span class="status-dot"></span>
+                    <span class="status-text">Production Live</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:6px;">
                     <button class="btn btn-primary btn-sm w-full" id="btn-sidebar-import">
@@ -130,9 +141,9 @@
                 </div>
             </header>
 
-            <!-- Dashboard Metric Cards -->
+            <!-- Dashboard Metric Cards (Interactive Click-to-Filter) -->
             <section class="metrics-grid">
-                <div class="metric-card">
+                <div class="metric-card interactive-card" id="card-stat-total" data-filter-type="status" data-filter-val="All" title="Click to show all candidates">
                     <div class="metric-icon metric-purple">
                         <i class="fa-solid fa-user-group"></i>
                     </div>
@@ -141,7 +152,7 @@
                         <span class="metric-value" id="stat-total">--</span>
                     </div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card interactive-card" id="card-stat-called" data-filter-type="status" data-filter-val="called" title="Click to filter called candidates">
                     <div class="metric-icon metric-green">
                         <i class="fa-solid fa-phone-volume"></i>
                     </div>
@@ -150,7 +161,7 @@
                         <span class="metric-value" id="stat-called">--</span>
                     </div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card interactive-card" id="card-stat-pending" data-filter-type="status" data-filter-val="pending" title="Click to filter pending calls">
                     <div class="metric-icon metric-amber">
                         <i class="fa-solid fa-phone-slash"></i>
                     </div>
@@ -159,7 +170,7 @@
                         <span class="metric-value" id="stat-pending-call">--</span>
                     </div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card interactive-card" id="card-stat-closed" data-filter-type="status" data-filter-val="closed" title="Click to filter closed / not interested">
                     <div class="metric-icon metric-rose" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
                         <i class="fa-solid fa-ban"></i>
                     </div>
@@ -168,7 +179,7 @@
                         <span class="metric-value" id="stat-closed" style="color: #f87171;">--</span>
                     </div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card interactive-card" id="card-stat-followups" data-filter-type="status" data-filter-val="followups" title="Click to filter scheduled follow-ups">
                     <div class="metric-icon metric-cyan">
                         <i class="fa-solid fa-clock-rotate-left"></i>
                     </div>
@@ -177,13 +188,19 @@
                         <span class="metric-value" id="stat-followups">--</span>
                     </div>
                 </div>
-                <div class="metric-card">
+                <div class="metric-card interactive-card metric-card-tasks" id="card-stat-escalated" data-filter-type="escalation" data-filter-val="assigned" title="Click to filter all assigned tasks / click person below">
                     <div class="metric-icon metric-purple" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <i class="fa-solid fa-list-check"></i>
                     </div>
-                    <div class="metric-details">
-                        <span class="metric-label">Escalated</span>
-                        <span class="metric-value" id="stat-escalated" style="color: #c084fc;">--</span>
+                    <div class="metric-details" style="width: 100%;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="metric-label" style="font-weight:700;">Task / Assigned To</span>
+                            <span class="metric-value" id="stat-escalated" style="color: #c084fc;">--</span>
+                        </div>
+                        <!-- Dynamic Level/Person Breakdown Chips -->
+                        <div class="escalation-breakdown-chips" id="stat-escalation-breakdown">
+                            <!-- Populated dynamically: e.g. L1 - HR: 2 | L2 - Raj: 1 -->
+                        </div>
                     </div>
                 </div>
             </section>
@@ -209,6 +226,7 @@
                                 <option value="closed">Closed / Not Interested</option>
                                 <option value="busy">Busy / Call Later</option>
                                 <option value="not_reachable">Not Reachable / RNR</option>
+                                <option value="followups">Scheduled Follow-ups</option>
                             </select>
                         </div>
                         <div class="select-wrapper">
@@ -226,6 +244,7 @@
                             <i class="fa-solid fa-triangle-exclamation select-icon"></i>
                             <select id="filter-escalation">
                                 <option value="All">Task / Assigned To: All</option>
+                                <option value="assigned">Assigned (All Tasks)</option>
                                 <option value="None">None / Unassigned</option>
                                 <option value="L1 - HR Person">L1 - HR Person</option>
                                 <option value="L2 - Raj">L2 - Raj</option>
@@ -279,7 +298,463 @@
                 </div>
             </section>
 
-            <!-- TAB 4: Connect Android Mobile -->
+            <!-- TAB 4: Analytics (Conversion & Audience Intelligence) -->
+            <section class="tab-panel" id="tab-analytics">
+                <div class="analytics-header">
+                    <div>
+                        <div class="analytics-badge-row">
+                            <span class="analytics-badge analytics-badge-primary"><i class="fa-solid fa-chart-line"></i> Conversion Intelligence & Audience Analytics</span>
+                            <span class="analytics-badge analytics-badge-outline" id="analytics-asof-badge"><i class="fa-solid fa-clock"></i> As-Of: Live</span>
+                            <span class="analytics-badge analytics-contract-badge"><i class="fa-solid fa-shield-halved"></i> Contract v2.1.0</span>
+                        </div>
+                        <h2 style="font-size:24px; font-weight:800; margin:6px 0 2px;">📊 Conversion & Audience Intelligence</h2>
+                        <p style="color:var(--text-muted); font-size:13px; margin:0;">
+                            Real-time evaluation of Insurance Advisory sourcing, response performance, meeting readiness, and role conversion across <strong>P1 Preferred (51+ Govt Retired)</strong> and <strong>P2 Controlled Expansion</strong> cohorts.
+                        </p>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <button class="btn btn-secondary" id="btn-export-analytics" onclick="exportAnalyticsReport()" title="Export clean JSON summary of analytics report">
+                            <i class="fa-solid fa-file-arrow-down"></i> Export Report
+                        </button>
+                        <button class="btn btn-primary" id="btn-refresh-analytics" onclick="loadAnalytics()">
+                            <i class="fa-solid fa-rotate-right"></i> Refresh Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Global Filter Toolbar -->
+                <div class="analytics-filter-bar">
+                    <div class="filter-item">
+                        <label for="filter-analytics-segment"><i class="fa-solid fa-layer-group"></i> Target Audience Segment</label>
+                        <select id="filter-analytics-segment" onchange="loadAnalytics()">
+                            <option value="all">All Audiences (P1 + P2 + Unclassified)</option>
+                            <option value="p1">P1 Preferred & Review Queue (51+ Govt Retired)</option>
+                            <option value="p1_confirmed">P1 Confirmed Only (Explicit)</option>
+                            <option value="p2">P2 Controlled Expansion (45+ / PSU / Senior)</option>
+                            <option value="unclassified">Unclassified / Incomplete Profiles</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="filter-analytics-portal"><i class="fa-solid fa-globe"></i> Portal Source</label>
+                        <select id="filter-analytics-portal" onchange="loadAnalytics()">
+                            <option value="all">All Portals</option>
+                            <option value="Naukri.com">Naukri.com</option>
+                            <option value="Indeed India">Indeed India</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Google / Web Search">Google / Web Search</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="filter-analytics-provenance"><i class="fa-solid fa-certificate"></i> Outcome Provenance</label>
+                        <select id="filter-analytics-provenance" onchange="loadAnalytics()">
+                            <option value="all">All Outcomes (Confirmed + Inferred Proxy)</option>
+                            <option value="explicit_only">Confirmed Explicit Only (No Proxy)</option>
+                        </select>
+                    </div>
+                    <div class="filter-item" style="display:flex; align-items:flex-end; gap:8px;">
+                        <button class="btn btn-secondary" id="btn-toggle-metric-mode" onclick="toggleMetricMode()" style="height:38px; white-space:nowrap;" title="Toggle count vs percentage view">
+                            <i class="fa-solid fa-percent"></i> <span id="toggle-metric-text">% View</span>
+                        </button>
+                        <button class="btn btn-secondary" id="btn-reset-analytics-filters" onclick="resetAnalyticsFilters()" style="height:38px; white-space:nowrap;" title="Reset all filters">
+                            <i class="fa-solid fa-filter-circle-xmark"></i> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Audience Segmentation & Quality KPI Cards -->
+                <div class="analytics-kpi-grid">
+                    <div class="analytics-kpi-card kpi-p1" onclick="openAnalyticsDrilldown('p1')" title="Click to view P1 candidates">
+                        <div class="kpi-top">
+                            <span class="kpi-label">P1 PREFERRED TARGET</span>
+                            <span class="kpi-badge">Age 51+ • Govt • Retired</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <div class="kpi-main-val" id="kpi-p1-count">--</div>
+                            <div class="kpi-sub-text" id="kpi-p1-sub">Loading...</div>
+                        </div>
+                        <div class="kpi-footer-note">Strict rule: Age &gt; 50, Sector == Govt, Status == Retired</div>
+                    </div>
+
+                    <div class="analytics-kpi-card kpi-p2" onclick="openAnalyticsDrilldown('p2')" title="Click to view P2 candidates">
+                        <div class="kpi-top">
+                            <span class="kpi-label">P2 CONTROLLED EXPANSION</span>
+                            <span class="kpi-badge">Age 45+ / PSU / Senior</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <div class="kpi-main-val" id="kpi-p2-count">--</div>
+                            <div class="kpi-sub-text" id="kpi-p2-sub">Senior & Public Sector Pool</div>
+                        </div>
+                        <div class="kpi-footer-note">Expansion across Public Sector, Banking & 15+ yr exp</div>
+                    </div>
+
+                    <div class="analytics-kpi-card kpi-unclass" onclick="openAnalyticsDrilldown('unclassified')" title="Click to view unclassified candidates">
+                        <div class="kpi-top">
+                            <span class="kpi-label">UNCLASSIFIED / REVIEW</span>
+                            <span class="kpi-badge">Missing Attributes</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <div class="kpi-main-val" id="kpi-unclass-count">--</div>
+                            <div class="kpi-sub-text" id="kpi-unclass-sub">Awaiting profile enrichment</div>
+                        </div>
+                        <div class="kpi-footer-note">Requires recruiter input in edit modal</div>
+                    </div>
+
+                    <div class="analytics-kpi-card kpi-quality">
+                        <div class="kpi-top">
+                            <span class="kpi-label">DATA COMPLETENESS & PROVENANCE</span>
+                            <span class="kpi-badge" id="kpi-quality-badge">Tracking</span>
+                        </div>
+                        <div class="kpi-completeness-bar-wrap">
+                            <div class="kpi-completeness-bar" id="kpi-completeness-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="kpi-quality-metrics" id="kpi-quality-details">
+                            <span>Explicit: Age 0% • Sector 0% • Retired 0%</span>
+                        </div>
+                        <div class="kpi-footer-note" id="kpi-provenance-note">Explicit Call Responses vs Inferred Proxies</div>
+                    </div>
+                </div>
+
+                <!-- Interactive Excel-Style Slicers & Scenario Modeling (Dynamic Recalculation) -->
+                <div class="analytics-slicer-card">
+                    <div class="slicer-header-row">
+                        <div class="slicer-title-group">
+                            <span class="slicer-main-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary);"></i> Interactive Slicers & Scenario Modeling</span>
+                            <span class="slicer-help-tag">Change numbers or click slicer tiles to dynamically recalculate all graphs & percentages in real-time</span>
+                        </div>
+                        <div class="slicer-actions-group">
+                            <span class="slicer-stat-pill" id="slicer-status-badge">
+                                <i class="fa-solid fa-chart-pie"></i> <span id="slicer-active-count">130 of 130 Candidates (100%)</span>
+                            </span>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="resetInteractiveSlicers()" style="height:32px; font-size:11px; padding: 0 10px;" title="Reset all slicers and scenario numbers">
+                                <i class="fa-solid fa-rotate-left"></i> Reset Slicers
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Row 1: Interactive Number Input Filters (Scenario Modeling) -->
+                    <div class="slicer-inputs-grid">
+                        <div class="slicer-num-input-wrap">
+                            <label for="slicer-min-age"><i class="fa-solid fa-cake-candles"></i> Minimum Age (Years):</label>
+                            <div class="slicer-num-field">
+                                <input type="number" id="slicer-min-age" min="18" max="99" placeholder="e.g. 50" oninput="applyInteractiveSlicers()">
+                                <span class="slicer-field-unit">yrs</span>
+                            </div>
+                        </div>
+
+                        <div class="slicer-num-input-wrap">
+                            <label for="slicer-min-exp"><i class="fa-solid fa-briefcase"></i> Minimum Experience (Years):</label>
+                            <div class="slicer-num-field">
+                                <input type="number" id="slicer-min-exp" min="0" max="50" placeholder="e.g. 15" oninput="applyInteractiveSlicers()">
+                                <span class="slicer-field-unit">yrs</span>
+                            </div>
+                        </div>
+
+                        <div class="slicer-num-input-wrap">
+                            <label for="slicer-keyword"><i class="fa-solid fa-magnifying-glass"></i> Keyword / Role / City:</label>
+                            <div class="slicer-num-field">
+                                <input type="text" id="slicer-keyword" placeholder="e.g. Manager, Officer, Bangalore" oninput="applyInteractiveSlicers()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Excel-Style Visual Clickable Slicers -->
+                    <div class="slicer-tiles-grid">
+                        <!-- Sector Slicer -->
+                        <div class="slicer-category-block">
+                            <div class="slicer-category-title"><i class="fa-solid fa-building-columns"></i> Employment Sector Slicer:</div>
+                            <div class="slicer-tile-group" id="slicer-group-sector">
+                                <button type="button" class="slicer-tile active" data-filter="all" onclick="toggleSlicerFilter('sector', 'all')">All</button>
+                                <button type="button" class="slicer-tile" data-filter="Government" onclick="toggleSlicerFilter('sector', 'Government')">🏛️ Govt</button>
+                                <button type="button" class="slicer-tile" data-filter="Public Sector / PSU" onclick="toggleSlicerFilter('sector', 'Public Sector / PSU')">🏢 PSU</button>
+                                <button type="button" class="slicer-tile" data-filter="Banking / Insurance" onclick="toggleSlicerFilter('sector', 'Banking / Insurance')">🏦 Banking</button>
+                                <button type="button" class="slicer-tile" data-filter="Defence / Armed Forces" onclick="toggleSlicerFilter('sector', 'Defence / Armed Forces')">🎖️ Defence</button>
+                                <button type="button" class="slicer-tile" data-filter="Private Sector" onclick="toggleSlicerFilter('sector', 'Private Sector')">💼 Private</button>
+                            </div>
+                        </div>
+
+                        <!-- Experience Slicer -->
+                        <div class="slicer-category-block">
+                            <div class="slicer-category-title"><i class="fa-solid fa-award"></i> Experience Slicer:</div>
+                            <div class="slicer-tile-group" id="slicer-group-exp">
+                                <button type="button" class="slicer-tile active" data-filter="all" onclick="toggleSlicerFilter('exp', 'all')">All Exp</button>
+                                <button type="button" class="slicer-tile" data-filter="0–5 yrs" onclick="toggleSlicerFilter('exp', '0–5 yrs')">0–5y</button>
+                                <button type="button" class="slicer-tile" data-filter="5–10 yrs" onclick="toggleSlicerFilter('exp', '5–10 yrs')">5–10y</button>
+                                <button type="button" class="slicer-tile" data-filter="10–15 yrs" onclick="toggleSlicerFilter('exp', '10–15 yrs')">10–15y</button>
+                                <button type="button" class="slicer-tile" data-filter="15–20 yrs" onclick="toggleSlicerFilter('exp', '15–20 yrs')">15–20y</button>
+                                <button type="button" class="slicer-tile" data-filter="20+ yrs" onclick="toggleSlicerFilter('exp', '20+ yrs')">20+y</button>
+                            </div>
+                        </div>
+
+                        <!-- Audience Slicer -->
+                        <div class="slicer-category-block">
+                            <div class="slicer-category-title"><i class="fa-solid fa-users-gear"></i> Target Pool Slicer:</div>
+                            <div class="slicer-tile-group" id="slicer-group-segment">
+                                <button type="button" class="slicer-tile active" data-filter="all" onclick="toggleSlicerFilter('segment', 'all')">All Pools</button>
+                                <button type="button" class="slicer-tile" data-filter="P1" onclick="toggleSlicerFilter('segment', 'P1')">⭐ P1 Target</button>
+                                <button type="button" class="slicer-tile" data-filter="P2" onclick="toggleSlicerFilter('segment', 'P2')">🚀 P2 Expansion</button>
+                                <button type="button" class="slicer-tile" data-filter="Unclassified" onclick="toggleSlicerFilter('segment', 'Unclassified')">⏳ Unclassified</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section View Selector & Multi-Select Filter Bar -->
+                <div class="analytics-view-selector-bar">
+                    <div class="view-selector-left">
+                        <div class="view-selector-label">
+                            <i class="fa-solid fa-layer-group"></i> <span>Display Sections:</span>
+                        </div>
+                        <div class="view-toggle-pills" id="analytics-view-pills">
+                            <button type="button" class="pill-btn active" id="pill-view-all" onclick="selectReportView('all')">
+                                <i class="fa-solid fa-border-all"></i> All Sections
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-funnel" onclick="selectReportView('funnel')">
+                                <i class="fa-solid fa-filter"></i> Master Funnel
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep1" onclick="selectReportView('rep1')">
+                                <i class="fa-solid fa-users"></i> Profile & Audience
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep2" onclick="selectReportView('rep2')">
+                                <i class="fa-solid fa-phone-volume"></i> Outreach Response
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep3" onclick="selectReportView('rep3')">
+                                <i class="fa-solid fa-handshake"></i> Interview Readiness
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep4" onclick="selectReportView('rep4')">
+                                <i class="fa-solid fa-user-tie"></i> Advisory Role
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Select Customizer -->
+                    <div class="multi-select-dropdown-wrap">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-multi-select" onclick="toggleReportMultiSelectMenu()" style="height:34px; font-size:12px;" title="Select any combination of reports to display">
+                            <i class="fa-solid fa-list-check"></i> Multi-Select Options <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:4px;"></i>
+                        </button>
+                        <div class="multi-select-menu" id="report-multi-select-menu" style="display:none;">
+                            <div class="multi-select-header">
+                                <span>Choose Reports to Display</span>
+                                <div class="multi-select-actions">
+                                    <button type="button" onclick="setAllReportCheckboxes(true)">All</button> • 
+                                    <button type="button" onclick="setAllReportCheckboxes(false)">Clear</button>
+                                </div>
+                            </div>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-funnel" checked onchange="updateMultiReportVisibility()">
+                                <span>Master Conversion Funnel</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep1" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 1: Audience & Profile Coverage</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep2" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 2: Outreach Response Performance</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep3" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 3: Interview Agreement & Mode</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep4" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 4: Advisory Role Progression</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Master Funnel Section with Dedicated Card Frame -->
+                <div class="analytics-section" id="sec-analytics-funnel">
+                    <div class="analytics-funnel-card">
+                        <div class="analytics-section-title-bar">
+                            <div>
+                                <div class="analytics-section-title"><i class="fa-solid fa-filter"></i> Master Conversion Funnel</div>
+                                <p class="analytics-section-desc">End-to-end recruiter conversion progression from initial sourcing to advisory acceptance.</p>
+                            </div>
+                            <span class="analytics-denominator-legend" id="funnel-denominator-legend">
+                                <i class="fa-solid fa-circle-info"></i> Stated Denominators: Each conversion stage displays its explicit base population.
+                            </span>
+                        </div>
+                        <div id="analytics-funnel" class="analytics-funnel-container">
+                            <div class="funnel-loading">Loading funnel data...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 1: Target Audience Coverage & Profile -->
+                <div class="analytics-section" id="sec-analytics-rep1">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-users"></i> Report 1 — Target Audience Coverage & Sourcing Profile</div>
+                            <p class="analytics-section-desc">Are we sourcing enough P1 preferred candidates, and what is the composition of the P2 expansion pool?</p>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="openAnalyticsDrilldown('all')" title="View candidate records in this report">
+                            <i class="fa-solid fa-list-check"></i> View Cohort Records
+                        </button>
+                    </div>
+                    <div class="analytics-grid-3">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Audience Segmentation Split</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-audience-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Experience Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-exp-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Age-Band Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-age-dist"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-3" style="margin-top: 14px;">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Sector / Industry Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-sector-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Portal Source Breakdown</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-portal-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Top Domains Being Sourced</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-domain-dist"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 2: Outreach Response Performance -->
+                <div class="analytics-section" id="sec-analytics-rep2">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-phone-volume"></i> Report 2 — Outreach Response Performance</div>
+                            <p class="analytics-section-desc">Which audience segment, domain, experience level, and location responds to our calls?</p>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Response Rate by Target Audience Segment</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-resp-segment"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Response Rate by Experience Band</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-resp-exp"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2" style="margin-top: 14px;">
+                        <div class="analytics-chart-card analytics-chart-card-wide">
+                            <div class="analytics-chart-title">Response Rate by Domain / Industry</div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-wide">
+                                <canvas id="chart-resp-domain"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Response Rate by City / Location</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-resp-location"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 3: Interview Agreement -->
+                <div class="analytics-section" id="sec-analytics-rep3">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-handshake"></i> Report 3 — Who Agrees to Interview / Meet in Person?</div>
+                            <p class="analytics-section-desc">Which candidate profiles are most likely to agree to a meeting?</p>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-3">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Meeting Mode Preference Split</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-interview-mode"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Agreement Rate by Target Segment</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-interview-segment"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Agreement Rate by Experience</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-interview-exp"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2" style="margin-top: 14px;">
+                        <div class="analytics-chart-card analytics-chart-card-wide">
+                            <div class="analytics-chart-title">Interview Agreement by Domain</div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-wide">
+                                <canvas id="chart-interview-domain"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 4: Advisory Role Progression & Acceptance -->
+                <div class="analytics-section" id="sec-analytics-rep4">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-user-tie"></i> Report 4 — Who Agreed to Join the Advisory Role?</div>
+                            <p class="analytics-section-desc">Advisory interest and formal acceptance rates by segment, domain, and experience.</p>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-3">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Advisory Stage Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-advisory-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Advisory Progression by Target Segment</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-advisory-segment"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Advisory Acceptance by Experience</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-advisory-exp"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2" style="margin-top: 14px;">
+                        <div class="analytics-chart-card analytics-chart-card-wide">
+                            <div class="analytics-chart-title">Advisory Acceptance by Domain</div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-wide">
+                                <canvas id="chart-advisory-domain"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data notice & Governance -->
+                <div style="text-align:center; color:var(--text-muted); font-size:12px; padding: 20px 0 10px;">
+                    <i class="fa-solid fa-circle-info"></i> Analytics update in real-time from your Excel tracker. Use the <strong>P1/P2 Segmentation</strong> and <strong>Conversion Intelligence</strong> fields in each candidate's edit modal to record Age, Sector, Retirement Status, Call Response, Meeting Agreement, and Advisory Interest.
+                </div>
+            </section>
+
+            <!-- TAB 5: Connect Android Mobile -->
             <section class="tab-panel" id="tab-mobile">
                 <div class="mobile-connect-card">
                     <div class="mobile-connect-header">
@@ -532,9 +1007,9 @@
                             </div>
                         </div>
                         <div class="box-item">
-                            <label for="field-email"><i class="fa-solid fa-envelope"></i> Email Address</label>
+                            <label for="field-email"><i class="fa-solid fa-envelope"></i> Email Address <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(Optional)</span></label>
                             <div class="input-with-actions">
-                                <input type="email" id="field-email" placeholder="e.g. candidate@example.com">
+                                <input type="text" id="field-email" placeholder="e.g. candidate@example.com (Optional)">
                                 <div class="quick-contact-btns">
                                     <button type="button" class="action-btn email" id="btn-quick-email" title="Compose email">
                                         <i class="fa-solid fa-envelope"></i>
@@ -549,6 +1024,55 @@
                         <div class="box-item">
                             <label for="field-experience"><i class="fa-solid fa-briefcase"></i> Total Experience</label>
                             <input type="text" id="field-experience" placeholder="e.g. 5 Years / Extracted from PDF">
+                        </div>
+                    </div>
+
+                    <!-- Section 2.5: Professional Profile, Audience Segmentation & Education -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-user-graduate"></i> Professional Profile & Audience Segmentation (P1/P2)
+                    </div>
+                    <div class="box-grid box-grid-3">
+                        <div class="box-item">
+                            <label for="field-current-role"><i class="fa-solid fa-user-tie"></i> Current Position / Role / Work</label>
+                            <input type="text" id="field-current-role" placeholder="e.g. Chief Manager / Retired Bank Manager">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-domain-industry"><i class="fa-solid fa-industry"></i> Domain / Industry / Work Category</label>
+                            <input type="text" id="field-domain-industry" placeholder="e.g. Banking / Public Sector / Defence / IT">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-education"><i class="fa-solid fa-graduation-cap"></i> Education Background</label>
+                            <input type="text" id="field-education" placeholder="e.g. B.Tech / MBA / B.Com">
+                        </div>
+                    </div>
+                    <div class="box-grid box-grid-3" style="margin-top: 8px;">
+                        <div class="box-item">
+                            <label for="field-age"><i class="fa-solid fa-cake-candles"></i> Age (Years)</label>
+                            <input type="number" id="field-age" min="18" max="100" placeholder="e.g. 55 (P1 is 51+)">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-employment-sector"><i class="fa-solid fa-building-columns"></i> Employment Sector</label>
+                            <select id="field-employment-sector">
+                                <option value="">— Select Sector —</option>
+                                <option value="Government">🏛️ Government (Central / State / Ministry)</option>
+                                <option value="Public Sector / PSU">🏢 Public Sector / PSU / Statutory Body</option>
+                                <option value="Defence / Armed Forces">🎖️ Defence / Armed Forces / Police</option>
+                                <option value="Banking / Insurance">🏦 Banking / Insurance / Financial</option>
+                                <option value="Private Sector">💼 Private Sector / Corporate</option>
+                                <option value="Other">🌐 Other / Independent</option>
+                                <option value="Unknown">❓ Unknown</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-retirement-status"><i class="fa-solid fa-user-clock"></i> Retirement Status</label>
+                            <select id="field-retirement-status">
+                                <option value="">— Select Status —</option>
+                                <option value="Retired">🏖️ Retired (Superannuated)</option>
+                                <option value="Voluntary Retirement (VRS)">📝 Voluntary Retirement (VRS)</option>
+                                <option value="Active / In-Service">💼 Active / In-Service</option>
+                                <option value="Other">🌐 Other</option>
+                                <option value="Unknown">❓ Unknown</option>
+                            </select>
                         </div>
                     </div>
 
@@ -638,7 +1162,46 @@
                         </div>
                     </div>
 
-                    <!-- Section 6: Reviewer & Workflow Routing -->
+                    <!-- Section 6A: Conversion Intelligence Tracking -->
+                    <div class="form-section-title" style="color: #34d399; border-color: rgba(52, 211, 153, 0.25); background: rgba(52, 211, 153, 0.07);">
+                        <i class="fa-solid fa-chart-line"></i> Conversion Intelligence
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-call-response" style="color: #34d399;"><i class="fa-solid fa-phone-volume"></i> Call Response</label>
+                            <select id="field-call-response">
+                                <option value="">— Not Set —</option>
+                                <option value="Positive">✅ Positive (Engaged / Open to Discussion)</option>
+                                <option value="Neutral">🔄 Neutral (Polite but Uncommitted)</option>
+                                <option value="Negative">❌ Negative (Not Interested / Declined)</option>
+                                <option value="No Response">📵 No Response (RNR / Busy)</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-interview-agreed" style="color: #34d399;"><i class="fa-solid fa-handshake"></i> Interview / Meeting Agreed</label>
+                            <select id="field-interview-agreed">
+                                <option value="">— Not Discussed —</option>
+                                <option value="Yes - In Person">🏢 Yes — In Person</option>
+                                <option value="Yes - Virtual">💻 Yes — Virtual / Online</option>
+                                <option value="Pending">⏳ Pending (Will Confirm)</option>
+                                <option value="Declined">🚫 Declined</option>
+                                <option value="Not Discussed">💬 Not Discussed</option>
+                            </select>
+                        </div>
+                        <div class="box-item box-span-2">
+                            <label for="field-advisory-interest" style="color: #34d399;"><i class="fa-solid fa-user-tie"></i> Advisory Role Interest</label>
+                            <select id="field-advisory-interest">
+                                <option value="">— Not Discussed —</option>
+                                <option value="Agreed">🌟 Agreed — Ready to Join Advisory</option>
+                                <option value="Interested - More Info Needed">🔍 Interested — Needs More Information</option>
+                                <option value="Declined">🚫 Declined</option>
+                                <option value="Not Discussed">💬 Not Discussed Yet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section 7: Reviewer & Workflow Routing -->
+
                     <div class="form-section-title">
                         <i class="fa-solid fa-share-nodes"></i> Review / Staging Options
                     </div>
@@ -834,9 +1397,53 @@
         </div>
     </div>
 
+    <!-- MODAL 7: Privacy-Safe Candidate Drill-Down Modal (Zero PII Exposure) -->
+    <div class="modal-overlay" id="modal-analytics-drilldown" style="display:none; z-index: 1200;">
+        <div class="modal-card modal-lg" style="max-width: 900px; width: 95%;">
+            <div class="modal-header" style="background: rgba(99, 102, 241, 0.08); border-bottom: 1px solid rgba(99, 102, 241, 0.2);">
+                <div class="modal-header-title" style="color: var(--primary);">
+                    <i class="fa-solid fa-list-check"></i>
+                    <h3 id="drilldown-modal-title">Cohort Candidate Drill-Down</h3>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-drilldown-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                    <div style="font-size:13px; color:var(--text-muted);" id="drilldown-summary-text">
+                        Showing matching candidates for this cohort segment. PII (phone/email) is protected.
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="drilldown-search-input" placeholder="Search candidate in cohort..." style="background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; font-size:12px; color:var(--text-primary); width:220px;">
+                    </div>
+                </div>
+                <div style="max-height: 480px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <table class="analytics-drilldown-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.04); text-align: left; border-bottom: 1px solid var(--border-color);">
+                                <th style="padding: 10px 12px;">Candidate</th>
+                                <th style="padding: 10px 12px;">Segment</th>
+                                <th style="padding: 10px 12px;">Domain / Role</th>
+                                <th style="padding: 10px 12px;">Exp / Age</th>
+                                <th style="padding: 10px 12px;">Outreach Status</th>
+                                <th style="padding: 10px 12px; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drilldown-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">Loading cohort candidates...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="/static/js/app.js?v=13"></script>
+    <script src="/static/js/app.js?v=20"></script>
 </body>
 </html>

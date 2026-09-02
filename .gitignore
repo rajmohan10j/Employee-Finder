@@ -24,6 +24,9 @@ Resume-Search-Script/candidate_data/
 Followup_Tracker*.xlsx
 Followup_Tracket*.xlsx
 candidates_tracker(OLD)*.xlsx
+candidates_tracker_export*.xlsx
+Prod_v1_backup/
+Production_Version_v1_backup/
 
 # Build and packaging output
 build/

@@ -1,0 +1,1454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="theme-color" content="#1e293b">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Candidate Tracker [UAT Testing & Staging]</title>
+    <!-- Social & WhatsApp Rich Link Previews -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Candidate Tracker [UAT Testing]">
+    <meta property="og:description" content="Candidate Tracker & Master Recruiter Portal - UAT Environment">
+    <meta property="og:site_name" content="Candidate Tracker [UAT Testing]">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Candidate Tracker [UAT Testing]">
+    <meta name="twitter:description" content="Candidate Tracker & Master Recruiter Portal - UAT Environment">
+    <!-- Icons & PWA Manifest -->
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    <link rel="icon" type="image/png" sizes="64x64" href="/static/favicon.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
+    <link rel="manifest" href="/static/manifest.json">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Local Self-Hosted FontAwesome (Guaranteed to render offline/LAN on mobile & desktop) -->
+    <link rel="stylesheet" href="/static/vendor/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css?v=19">
+    <!-- Local Pure JS QR Code Library -->
+    <script src="/static/vendor/qrcode.min.js"></script>
+    <!-- Local Self-Hosted Chart.js v4 for Offline/LAN Analytics -->
+    <script src="/static/vendor/chart.umd.min.js"></script>
+    <script>
+        if (!window.Chart) {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"><\/script>');
+        }
+    </script>
+</head>
+<body class="dark-theme">
+    <div class="app-layout">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                    <i class="fa-solid fa-flask-vial"></i>
+                </div>
+                <div class="brand-info">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <span class="brand-title">CandidateTracker</span>
+                        <span class="badge" style="font-size:10px; font-weight:800; background:rgba(245,158,11,0.2); color:#fbbf24; border:1px solid rgba(245,158,11,0.4); padding:2px 6px; border-radius:4px; letter-spacing:0.5px;"><i class="fa-solid fa-vial" style="font-size:9px; margin-right:3px;"></i>UAT v2.0-beta</span>
+                    </div>
+                    <span class="brand-subtitle" style="color:#fbbf24;">UAT Testing & Staging</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="candidates" id="nav-candidates">
+                    <i class="fa-solid fa-address-book"></i>
+                    <span>Candidates Tracker</span>
+                    <span class="badge" id="badge-total-candidates">0</span>
+                </button>
+                <button class="nav-item" data-tab="reviews" id="nav-reviews">
+                    <i class="fa-solid fa-code-pull-request"></i>
+                    <span>Review & Commit</span>
+                    <span class="badge badge-warning" id="badge-pending-reviews">0</span>
+                </button>
+                <button class="nav-item" data-tab="reviewers" id="nav-reviewers">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Reviewer Contacts</span>
+                </button>
+                <button class="nav-item" data-tab="analytics" id="nav-analytics">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Analytics</span>
+                </button>
+                <button class="nav-item" data-tab="mobile" id="nav-mobile">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>Connect Mobile / QR</span>
+                </button>
+                <button class="nav-item" data-tab="backups" id="nav-backups">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span>Backups & Versions</span>
+                    <span class="badge" id="badge-backups-count" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">GFS</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="server-status">
+                    <span class="status-dot" style="background:#f59e0b; box-shadow: 0 0 8px #f59e0b;"></span>
+                    <span class="status-text" style="color:#fbbf24; font-weight:600;"><i class="fa-solid fa-flask" style="font-size:11px; margin-right:4px;"></i>UAT Active (Staging)</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <button class="btn btn-primary btn-sm w-full" id="btn-sidebar-import">
+                        <i class="fa-solid fa-file-import"></i> Import XLSX File
+                    </button>
+                    <button class="btn btn-outline btn-sm w-full" id="btn-export-excel">
+                        <i class="fa-solid fa-file-excel"></i> Export Excel
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <h1 class="page-title" id="page-title">Candidate Master Tracker</h1>
+                        <span class="badge" style="background:rgba(245,158,11,0.18); color:#fbbf24; border:1px solid rgba(245,158,11,0.35); font-size:11px; font-weight:700; padding:3px 8px; border-radius:6px; letter-spacing:0.3px;">
+                            <i class="fa-solid fa-flask-vial" style="margin-right:4px;"></i>UAT Environment (Isolated)
+                        </span>
+                    </div>
+                    <p class="page-subtitle" id="page-subtitle">Real-time box item editor and master database synchronization</p>
+                </div>
+                <div class="header-actions">
+                    <div class="size-controls" title="Adjust text and box size for Android/Desktop">
+                        <button class="btn btn-secondary btn-icon btn-sm" id="btn-size-down" title="Reduce Size (A-)">
+                            <span style="font-size:12px; font-weight:700;">A-</span>
+                        </button>
+                        <button class="btn btn-secondary btn-icon btn-sm" id="btn-size-reset" title="Reset Size">
+                            <span style="font-size:12px; font-weight:700;">100%</span>
+                        </button>
+                        <button class="btn btn-secondary btn-icon btn-sm" id="btn-size-up" title="Increase Size (A+)">
+                            <span style="font-size:14px; font-weight:700;">A+</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary btn-icon" id="btn-theme-toggle" title="Toggle Theme">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <button class="btn btn-secondary btn-icon" id="btn-refresh" title="Refresh Data">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-header-backup" title="Take on-demand backup snapshot">
+                        <i class="fa-solid fa-shield-halved"></i>
+                        <span class="btn-text">Backup Now</span>
+                    </button>
+                    <button class="btn btn-secondary" id="btn-header-import">
+                        <i class="fa-solid fa-file-import"></i>
+                        <span class="btn-text">Import XLSX</span>
+                    </button>
+                    <button class="btn btn-primary" id="btn-add-candidate">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span class="btn-text">Add Candidate</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Metric Cards (Interactive Click-to-Filter) -->
+            <section class="metrics-grid">
+                <div class="metric-card interactive-card" id="card-stat-total" data-filter-type="status" data-filter-val="All" title="Click to show all candidates">
+                    <div class="metric-icon metric-purple">
+                        <i class="fa-solid fa-user-group"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Total Sourced</span>
+                        <span class="metric-value" id="stat-total">--</span>
+                    </div>
+                </div>
+                <div class="metric-card interactive-card" id="card-stat-called" data-filter-type="status" data-filter-val="called" title="Click to filter called candidates">
+                    <div class="metric-icon metric-green">
+                        <i class="fa-solid fa-phone-volume"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">HR Called</span>
+                        <span class="metric-value" id="stat-called">--</span>
+                    </div>
+                </div>
+                <div class="metric-card interactive-card" id="card-stat-pending" data-filter-type="status" data-filter-val="pending" title="Click to filter pending calls">
+                    <div class="metric-icon metric-amber">
+                        <i class="fa-solid fa-phone-slash"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Pending Call</span>
+                        <span class="metric-value" id="stat-pending-call">--</span>
+                    </div>
+                </div>
+                <div class="metric-card interactive-card" id="card-stat-closed" data-filter-type="status" data-filter-val="closed" title="Click to filter closed / not interested">
+                    <div class="metric-icon metric-rose" style="background: rgba(239, 68, 68, 0.15); color: #ef4444;">
+                        <i class="fa-solid fa-ban"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Closed (Not Int.)</span>
+                        <span class="metric-value" id="stat-closed" style="color: #f87171;">--</span>
+                    </div>
+                </div>
+                <div class="metric-card interactive-card" id="card-stat-followups" data-filter-type="status" data-filter-val="followups" title="Click to filter scheduled follow-ups">
+                    <div class="metric-icon metric-cyan">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="metric-details">
+                        <span class="metric-label">Follow-ups</span>
+                        <span class="metric-value" id="stat-followups">--</span>
+                    </div>
+                </div>
+                <div class="metric-card interactive-card metric-card-tasks" id="card-stat-escalated" data-filter-type="escalation" data-filter-val="assigned" title="Click to filter all assigned tasks / click person below">
+                    <div class="metric-icon metric-purple" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                    <div class="metric-details" style="width: 100%;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="metric-label" style="font-weight:700;">Task / Assigned To</span>
+                            <span class="metric-value" id="stat-escalated" style="color: #c084fc;">--</span>
+                        </div>
+                        <!-- Dynamic Level/Person Breakdown Chips -->
+                        <div class="escalation-breakdown-chips" id="stat-escalation-breakdown">
+                            <!-- Populated dynamically: e.g. L1 - HR: 2 | L2 - Raj: 1 -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 1: Candidates View -->
+            <section class="tab-panel active" id="tab-candidates">
+                <!-- Search & Filters -->
+                <div class="toolbar-card">
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                        <input type="text" id="search-input" placeholder="Search candidate by name, phone, email, location, remarks..." autocomplete="off">
+                        <button class="clear-btn" id="btn-clear-search" style="display:none;">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                    <div class="filter-group">
+                        <div class="select-wrapper">
+                            <i class="fa-solid fa-phone-flip select-icon"></i>
+                            <select id="filter-status">
+                                <option value="All">Call Status: All</option>
+                                <option value="called">Called (Yes / Active)</option>
+                                <option value="pending">Pending / Not Called</option>
+                                <option value="closed">Closed / Not Interested</option>
+                                <option value="busy">Busy / Call Later</option>
+                                <option value="not_reachable">Not Reachable / RNR</option>
+                                <option value="followups">Scheduled Follow-ups</option>
+                            </select>
+                        </div>
+                        <div class="select-wrapper">
+                            <i class="fa-solid fa-globe select-icon"></i>
+                            <select id="filter-portal">
+                                <option value="All">Portal: All</option>
+                                <option value="Naukri">Naukri.com</option>
+                                <option value="Indeed">Indeed India</option>
+                                <option value="LinkedIn">LinkedIn</option>
+                                <option value="WorkIndia">WorkIndia</option>
+                                <option value="Google">Google / Web</option>
+                            </select>
+                        </div>
+                        <div class="select-wrapper">
+                            <i class="fa-solid fa-triangle-exclamation select-icon"></i>
+                            <select id="filter-escalation">
+                                <option value="All">Task / Assigned To: All</option>
+                                <option value="assigned">Assigned (All Tasks)</option>
+                                <option value="None">None / Unassigned</option>
+                                <option value="L1 - HR Person">L1 - HR Person</option>
+                                <option value="L2 - Raj">L2 - Raj</option>
+                                <option value="L3 - Chaitali">L3 - Chaitali</option>
+                                <option value="L4 - Matthew">L4 - Matthew</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-outline btn-sm" id="btn-toolbar-import">
+                            <i class="fa-solid fa-file-import"></i> Import XLSX
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Candidates List / Grid -->
+                <div class="candidates-container">
+                    <div class="candidates-header-info">
+                        <span id="results-count-text">Showing candidates...</span>
+                    </div>
+                    <div class="candidates-grid" id="candidates-list">
+                        <!-- Dynamic candidate cards inserted via JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: Review & Commit Stage -->
+            <section class="tab-panel" id="tab-reviews">
+                <div class="panel-header">
+                    <div>
+                        <h2>Pending Changes & Review Stage</h2>
+                        <p class="text-muted">Review candidate updates submitted by users before committing to the Excel Master database.</p>
+                    </div>
+                </div>
+                <div class="reviews-list" id="reviews-list">
+                    <!-- Dynamic review items inserted via JavaScript -->
+                </div>
+            </section>
+
+            <!-- TAB 3: Reviewer Contacts -->
+            <section class="tab-panel" id="tab-reviewers">
+                <div class="panel-header-action">
+                    <div>
+                        <h2>Authorized Reviewers & Contact List</h2>
+                        <p class="text-muted">Users, Team Leads and Managers authorized to review, modify, and commit changes.</p>
+                    </div>
+                    <button class="btn btn-primary" id="btn-add-reviewer">
+                        <i class="fa-solid fa-user-plus"></i> Add Reviewer
+                    </button>
+                </div>
+                <div class="reviewers-grid" id="reviewers-list">
+                    <!-- Dynamic reviewers inserted via JavaScript -->
+                </div>
+            </section>
+
+            <!-- TAB 4: Analytics (Conversion & Audience Intelligence) -->
+            <section class="tab-panel" id="tab-analytics">
+                <div class="analytics-header">
+                    <div>
+                        <div class="analytics-badge-row">
+                            <span class="analytics-badge analytics-badge-primary"><i class="fa-solid fa-chart-line"></i> Conversion Intelligence & Audience Analytics</span>
+                            <span class="analytics-badge analytics-badge-outline" id="analytics-asof-badge"><i class="fa-solid fa-clock"></i> As-Of: Live</span>
+                            <span class="analytics-badge analytics-contract-badge"><i class="fa-solid fa-shield-halved"></i> Contract v2.1.0</span>
+                        </div>
+                        <h2 style="font-size:24px; font-weight:800; margin:6px 0 2px;">📊 Conversion & Audience Intelligence</h2>
+                        <p style="color:var(--text-muted); font-size:13px; margin:0;">
+                            Real-time evaluation of Insurance Advisory sourcing, response performance, meeting readiness, and role conversion across <strong>P1 Preferred (51+ Govt Retired)</strong> and <strong>P2 Controlled Expansion</strong> cohorts.
+                        </p>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <button class="btn btn-secondary" id="btn-export-analytics" onclick="exportAnalyticsReport()" title="Export clean JSON summary of analytics report">
+                            <i class="fa-solid fa-file-arrow-down"></i> Export Report
+                        </button>
+                        <button class="btn btn-primary" id="btn-refresh-analytics" onclick="loadAnalytics()">
+                            <i class="fa-solid fa-rotate-right"></i> Refresh Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Global Filter Toolbar -->
+                <div class="analytics-filter-bar">
+                    <div class="filter-item">
+                        <label for="filter-analytics-segment"><i class="fa-solid fa-layer-group"></i> Target Audience Segment</label>
+                        <select id="filter-analytics-segment" onchange="loadAnalytics()">
+                            <option value="all">All Audiences (P1 + P2 + Unclassified)</option>
+                            <option value="p1">P1 Preferred & Review Queue (51+ Govt Retired)</option>
+                            <option value="p1_confirmed">P1 Confirmed Only (Explicit)</option>
+                            <option value="p2">P2 Controlled Expansion (45+ / PSU / Senior)</option>
+                            <option value="unclassified">Unclassified / Incomplete Profiles</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="filter-analytics-portal"><i class="fa-solid fa-globe"></i> Portal Source</label>
+                        <select id="filter-analytics-portal" onchange="loadAnalytics()">
+                            <option value="all">All Portals</option>
+                            <option value="Naukri.com">Naukri.com</option>
+                            <option value="Indeed India">Indeed India</option>
+                            <option value="LinkedIn">LinkedIn</option>
+                            <option value="Google / Web Search">Google / Web Search</option>
+                        </select>
+                    </div>
+                    <div class="filter-item">
+                        <label for="filter-analytics-provenance"><i class="fa-solid fa-certificate"></i> Outcome Provenance</label>
+                        <select id="filter-analytics-provenance" onchange="loadAnalytics()">
+                            <option value="all">All Outcomes (Confirmed + Inferred Proxy)</option>
+                            <option value="explicit_only">Confirmed Explicit Only (No Proxy)</option>
+                        </select>
+                    </div>
+                    <div class="filter-item" style="display:flex; align-items:flex-end; gap:8px;">
+                        <button class="btn btn-secondary" id="btn-toggle-metric-mode" onclick="toggleMetricMode()" style="height:38px; white-space:nowrap;" title="Toggle count vs percentage view">
+                            <i class="fa-solid fa-percent"></i> <span id="toggle-metric-text">% View</span>
+                        </button>
+                        <button class="btn btn-secondary" id="btn-reset-analytics-filters" onclick="resetAnalyticsFilters()" style="height:38px; white-space:nowrap;" title="Reset all filters">
+                            <i class="fa-solid fa-filter-circle-xmark"></i> Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Audience Segmentation & Quality KPI Cards -->
+                <div class="analytics-kpi-grid">
+                    <div class="analytics-kpi-card kpi-p1" onclick="openAnalyticsDrilldown('p1')" title="Click to view P1 candidates">
+                        <div class="kpi-top">
+                            <span class="kpi-label">P1 PREFERRED TARGET</span>
+                            <span class="kpi-badge">Age 51+ • Govt • Retired</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <div class="kpi-main-val" id="kpi-p1-count">--</div>
+                            <div class="kpi-sub-text" id="kpi-p1-sub">Loading...</div>
+                        </div>
+                        <div class="kpi-footer-note">Strict rule: Age &gt; 50, Sector == Govt, Status == Retired</div>
+                    </div>
+
+                    <div class="analytics-kpi-card kpi-p2" onclick="openAnalyticsDrilldown('p2')" title="Click to view P2 candidates">
+                        <div class="kpi-top">
+                            <span class="kpi-label">P2 CONTROLLED EXPANSION</span>
+                            <span class="kpi-badge">Age 45+ / PSU / Senior</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <div class="kpi-main-val" id="kpi-p2-count">--</div>
+                            <div class="kpi-sub-text" id="kpi-p2-sub">Senior & Public Sector Pool</div>
+                        </div>
+                        <div class="kpi-footer-note">Expansion across Public Sector, Banking & 15+ yr exp</div>
+                    </div>
+
+                    <div class="analytics-kpi-card kpi-unclass" onclick="openAnalyticsDrilldown('unclassified')" title="Click to view unclassified candidates">
+                        <div class="kpi-top">
+                            <span class="kpi-label">UNCLASSIFIED / REVIEW</span>
+                            <span class="kpi-badge">Missing Attributes</span>
+                        </div>
+                        <div class="kpi-value-row">
+                            <div class="kpi-main-val" id="kpi-unclass-count">--</div>
+                            <div class="kpi-sub-text" id="kpi-unclass-sub">Awaiting profile enrichment</div>
+                        </div>
+                        <div class="kpi-footer-note">Requires recruiter input in edit modal</div>
+                    </div>
+
+                    <div class="analytics-kpi-card kpi-quality">
+                        <div class="kpi-top">
+                            <span class="kpi-label">DATA COMPLETENESS & PROVENANCE</span>
+                            <span class="kpi-badge" id="kpi-quality-badge">Tracking</span>
+                        </div>
+                        <div class="kpi-completeness-bar-wrap">
+                            <div class="kpi-completeness-bar" id="kpi-completeness-fill" style="width: 0%;"></div>
+                        </div>
+                        <div class="kpi-quality-metrics" id="kpi-quality-details">
+                            <span>Explicit: Age 0% • Sector 0% • Retired 0%</span>
+                        </div>
+                        <div class="kpi-footer-note" id="kpi-provenance-note">Explicit Call Responses vs Inferred Proxies</div>
+                    </div>
+                </div>
+
+                <!-- Interactive Excel-Style Slicers & Scenario Modeling (Dynamic Recalculation) -->
+                <div class="analytics-slicer-card">
+                    <div class="slicer-header-row">
+                        <div class="slicer-title-group">
+                            <span class="slicer-main-title"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--primary);"></i> Interactive Slicers & Scenario Modeling</span>
+                            <span class="slicer-help-tag">Change numbers or click slicer tiles to dynamically recalculate all graphs & percentages in real-time</span>
+                        </div>
+                        <div class="slicer-actions-group">
+                            <span class="slicer-stat-pill" id="slicer-status-badge">
+                                <i class="fa-solid fa-chart-pie"></i> <span id="slicer-active-count">130 of 130 Candidates (100%)</span>
+                            </span>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="resetInteractiveSlicers()" style="height:32px; font-size:11px; padding: 0 10px;" title="Reset all slicers and scenario numbers">
+                                <i class="fa-solid fa-rotate-left"></i> Reset Slicers
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Row 1: Interactive Number Input Filters (Scenario Modeling) -->
+                    <div class="slicer-inputs-grid">
+                        <div class="slicer-num-input-wrap">
+                            <label for="slicer-min-age"><i class="fa-solid fa-cake-candles"></i> Minimum Age (Years):</label>
+                            <div class="slicer-num-field">
+                                <input type="number" id="slicer-min-age" min="18" max="99" placeholder="e.g. 50" oninput="applyInteractiveSlicers()">
+                                <span class="slicer-field-unit">yrs</span>
+                            </div>
+                        </div>
+
+                        <div class="slicer-num-input-wrap">
+                            <label for="slicer-min-exp"><i class="fa-solid fa-briefcase"></i> Minimum Experience (Years):</label>
+                            <div class="slicer-num-field">
+                                <input type="number" id="slicer-min-exp" min="0" max="50" placeholder="e.g. 15" oninput="applyInteractiveSlicers()">
+                                <span class="slicer-field-unit">yrs</span>
+                            </div>
+                        </div>
+
+                        <div class="slicer-num-input-wrap">
+                            <label for="slicer-keyword"><i class="fa-solid fa-magnifying-glass"></i> Keyword / Role / City:</label>
+                            <div class="slicer-num-field">
+                                <input type="text" id="slicer-keyword" placeholder="e.g. Manager, Officer, Bangalore" oninput="applyInteractiveSlicers()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Excel-Style Visual Clickable Slicers -->
+                    <div class="slicer-tiles-grid">
+                        <!-- Sector Slicer -->
+                        <div class="slicer-category-block">
+                            <div class="slicer-category-title"><i class="fa-solid fa-building-columns"></i> Employment Sector Slicer:</div>
+                            <div class="slicer-tile-group" id="slicer-group-sector">
+                                <button type="button" class="slicer-tile active" data-filter="all" onclick="toggleSlicerFilter('sector', 'all')">All</button>
+                                <button type="button" class="slicer-tile" data-filter="Government" onclick="toggleSlicerFilter('sector', 'Government')">🏛️ Govt</button>
+                                <button type="button" class="slicer-tile" data-filter="Public Sector / PSU" onclick="toggleSlicerFilter('sector', 'Public Sector / PSU')">🏢 PSU</button>
+                                <button type="button" class="slicer-tile" data-filter="Banking / Insurance" onclick="toggleSlicerFilter('sector', 'Banking / Insurance')">🏦 Banking</button>
+                                <button type="button" class="slicer-tile" data-filter="Defence / Armed Forces" onclick="toggleSlicerFilter('sector', 'Defence / Armed Forces')">🎖️ Defence</button>
+                                <button type="button" class="slicer-tile" data-filter="Private Sector" onclick="toggleSlicerFilter('sector', 'Private Sector')">💼 Private</button>
+                            </div>
+                        </div>
+
+                        <!-- Experience Slicer -->
+                        <div class="slicer-category-block">
+                            <div class="slicer-category-title"><i class="fa-solid fa-award"></i> Experience Slicer:</div>
+                            <div class="slicer-tile-group" id="slicer-group-exp">
+                                <button type="button" class="slicer-tile active" data-filter="all" onclick="toggleSlicerFilter('exp', 'all')">All Exp</button>
+                                <button type="button" class="slicer-tile" data-filter="0–5 yrs" onclick="toggleSlicerFilter('exp', '0–5 yrs')">0–5y</button>
+                                <button type="button" class="slicer-tile" data-filter="5–10 yrs" onclick="toggleSlicerFilter('exp', '5–10 yrs')">5–10y</button>
+                                <button type="button" class="slicer-tile" data-filter="10–15 yrs" onclick="toggleSlicerFilter('exp', '10–15 yrs')">10–15y</button>
+                                <button type="button" class="slicer-tile" data-filter="15–20 yrs" onclick="toggleSlicerFilter('exp', '15–20 yrs')">15–20y</button>
+                                <button type="button" class="slicer-tile" data-filter="20+ yrs" onclick="toggleSlicerFilter('exp', '20+ yrs')">20+y</button>
+                            </div>
+                        </div>
+
+                        <!-- Audience Slicer -->
+                        <div class="slicer-category-block">
+                            <div class="slicer-category-title"><i class="fa-solid fa-users-gear"></i> Target Pool Slicer:</div>
+                            <div class="slicer-tile-group" id="slicer-group-segment">
+                                <button type="button" class="slicer-tile active" data-filter="all" onclick="toggleSlicerFilter('segment', 'all')">All Pools</button>
+                                <button type="button" class="slicer-tile" data-filter="P1" onclick="toggleSlicerFilter('segment', 'P1')">⭐ P1 Target</button>
+                                <button type="button" class="slicer-tile" data-filter="P2" onclick="toggleSlicerFilter('segment', 'P2')">🚀 P2 Expansion</button>
+                                <button type="button" class="slicer-tile" data-filter="Unclassified" onclick="toggleSlicerFilter('segment', 'Unclassified')">⏳ Unclassified</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section View Selector & Multi-Select Filter Bar -->
+                <div class="analytics-view-selector-bar">
+                    <div class="view-selector-left">
+                        <div class="view-selector-label">
+                            <i class="fa-solid fa-layer-group"></i> <span>Display Sections:</span>
+                        </div>
+                        <div class="view-toggle-pills" id="analytics-view-pills">
+                            <button type="button" class="pill-btn active" id="pill-view-all" onclick="selectReportView('all')">
+                                <i class="fa-solid fa-border-all"></i> All Sections
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-funnel" onclick="selectReportView('funnel')">
+                                <i class="fa-solid fa-filter"></i> Master Funnel
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep1" onclick="selectReportView('rep1')">
+                                <i class="fa-solid fa-users"></i> Profile & Audience
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep2" onclick="selectReportView('rep2')">
+                                <i class="fa-solid fa-phone-volume"></i> Outreach Response
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep3" onclick="selectReportView('rep3')">
+                                <i class="fa-solid fa-handshake"></i> Interview Readiness
+                            </button>
+                            <button type="button" class="pill-btn" id="pill-view-rep4" onclick="selectReportView('rep4')">
+                                <i class="fa-solid fa-user-tie"></i> Advisory Role
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Select Customizer -->
+                    <div class="multi-select-dropdown-wrap">
+                        <button type="button" class="btn btn-secondary btn-sm" id="btn-toggle-multi-select" onclick="toggleReportMultiSelectMenu()" style="height:34px; font-size:12px;" title="Select any combination of reports to display">
+                            <i class="fa-solid fa-list-check"></i> Multi-Select Options <i class="fa-solid fa-chevron-down" style="font-size:10px; margin-left:4px;"></i>
+                        </button>
+                        <div class="multi-select-menu" id="report-multi-select-menu" style="display:none;">
+                            <div class="multi-select-header">
+                                <span>Choose Reports to Display</span>
+                                <div class="multi-select-actions">
+                                    <button type="button" onclick="setAllReportCheckboxes(true)">All</button> • 
+                                    <button type="button" onclick="setAllReportCheckboxes(false)">Clear</button>
+                                </div>
+                            </div>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-funnel" checked onchange="updateMultiReportVisibility()">
+                                <span>Master Conversion Funnel</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep1" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 1: Audience & Profile Coverage</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep2" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 2: Outreach Response Performance</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep3" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 3: Interview Agreement & Mode</span>
+                            </label>
+                            <label class="multi-select-item">
+                                <input type="checkbox" id="chk-show-rep4" checked onchange="updateMultiReportVisibility()">
+                                <span>Report 4: Advisory Role Progression</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Master Funnel Section with Dedicated Card Frame -->
+                <div class="analytics-section" id="sec-analytics-funnel">
+                    <div class="analytics-funnel-card">
+                        <div class="analytics-section-title-bar">
+                            <div>
+                                <div class="analytics-section-title"><i class="fa-solid fa-filter"></i> Master Conversion Funnel</div>
+                                <p class="analytics-section-desc">End-to-end recruiter conversion progression from initial sourcing to advisory acceptance.</p>
+                            </div>
+                            <span class="analytics-denominator-legend" id="funnel-denominator-legend">
+                                <i class="fa-solid fa-circle-info"></i> Stated Denominators: Each conversion stage displays its explicit base population.
+                            </span>
+                        </div>
+                        <div id="analytics-funnel" class="analytics-funnel-container">
+                            <div class="funnel-loading">Loading funnel data...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 1: Target Audience Coverage & Profile -->
+                <div class="analytics-section" id="sec-analytics-rep1">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-users"></i> Report 1 — Target Audience Coverage & Sourcing Profile</div>
+                            <p class="analytics-section-desc">Are we sourcing enough P1 preferred candidates, and what is the composition of the P2 expansion pool?</p>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="openAnalyticsDrilldown('all')" title="View candidate records in this report">
+                            <i class="fa-solid fa-list-check"></i> View Cohort Records
+                        </button>
+                    </div>
+                    <div class="analytics-grid-3">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Audience Segmentation Split</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-audience-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Experience Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-exp-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Age-Band Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-age-dist"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-3" style="margin-top: 14px;">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Sector / Industry Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-sector-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Portal Source Breakdown</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-portal-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Top Domains Being Sourced</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-domain-dist"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 2: Outreach Response Performance -->
+                <div class="analytics-section" id="sec-analytics-rep2">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-phone-volume"></i> Report 2 — Outreach Response Performance</div>
+                            <p class="analytics-section-desc">Which audience segment, domain, experience level, and location responds to our calls?</p>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Response Rate by Target Audience Segment</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-resp-segment"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Response Rate by Experience Band</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-resp-exp"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2" style="margin-top: 14px;">
+                        <div class="analytics-chart-card analytics-chart-card-wide">
+                            <div class="analytics-chart-title">Response Rate by Domain / Industry</div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-wide">
+                                <canvas id="chart-resp-domain"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Response Rate by City / Location</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-resp-location"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 3: Interview Agreement -->
+                <div class="analytics-section" id="sec-analytics-rep3">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-handshake"></i> Report 3 — Who Agrees to Interview / Meet in Person?</div>
+                            <p class="analytics-section-desc">Which candidate profiles are most likely to agree to a meeting?</p>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-3">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Meeting Mode Preference Split</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-interview-mode"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Agreement Rate by Target Segment</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-interview-segment"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Agreement Rate by Experience</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-interview-exp"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2" style="margin-top: 14px;">
+                        <div class="analytics-chart-card analytics-chart-card-wide">
+                            <div class="analytics-chart-title">Interview Agreement by Domain</div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-wide">
+                                <canvas id="chart-interview-domain"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report 4: Advisory Role Progression & Acceptance -->
+                <div class="analytics-section" id="sec-analytics-rep4">
+                    <div class="analytics-section-title-bar">
+                        <div>
+                            <div class="analytics-section-title"><i class="fa-solid fa-user-tie"></i> Report 4 — Who Agreed to Join the Advisory Role?</div>
+                            <p class="analytics-section-desc">Advisory interest and formal acceptance rates by segment, domain, and experience.</p>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-3">
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Advisory Stage Distribution</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-advisory-dist"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Advisory Progression by Target Segment</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-advisory-segment"></canvas>
+                            </div>
+                        </div>
+                        <div class="analytics-chart-card">
+                            <div class="analytics-chart-title">Advisory Acceptance by Experience</div>
+                            <div class="chart-canvas-wrap">
+                                <canvas id="chart-advisory-exp"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="analytics-grid-2" style="margin-top: 14px;">
+                        <div class="analytics-chart-card analytics-chart-card-wide">
+                            <div class="analytics-chart-title">Advisory Acceptance by Domain</div>
+                            <div class="chart-canvas-wrap chart-canvas-wrap-wide">
+                                <canvas id="chart-advisory-domain"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data notice & Governance -->
+                <div style="text-align:center; color:var(--text-muted); font-size:12px; padding: 20px 0 10px;">
+                    <i class="fa-solid fa-circle-info"></i> Analytics update in real-time from your Excel tracker. Use the <strong>P1/P2 Segmentation</strong> and <strong>Conversion Intelligence</strong> fields in each candidate's edit modal to record Age, Sector, Retirement Status, Call Response, Meeting Agreement, and Advisory Interest.
+                </div>
+            </section>
+
+            <!-- TAB 5: Connect Android Mobile -->
+            <section class="tab-panel" id="tab-mobile">
+                <div class="mobile-connect-card">
+                    <div class="mobile-connect-header">
+                        <div class="mobile-icon-circle">
+                            <i class="fa-solid fa-mobile-screen"></i>
+                        </div>
+                        <h2>Connect & Use on Android Phone</h2>
+                        <p class="text-muted">Scan the QR code with your Android camera or browser to instantly use the Candidate Tracker on your mobile phone on the same Wi-Fi network!</p>
+                    </div>
+
+                    <div class="qr-section">
+                        <div id="qrcode-container" class="qrcode-wrapper"></div>
+                        <div class="qr-info">
+                            <label class="info-label">Direct Mobile URL:</label>
+                            <div class="copy-url-box">
+                                <input type="text" id="mobile-url-input" readonly value="Detecting IP...">
+                                <button class="btn btn-secondary btn-sm" id="btn-copy-url">
+                                    <i class="fa-solid fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <div class="connection-tips">
+                                <h4><i class="fa-solid fa-circle-check"></i> Android Ready Features:</h4>
+                                <ul>
+                                    <li><strong>1-Tap Phone Call</strong> & <strong>WhatsApp Message</strong> buttons for every candidate.</li>
+                                    <li><strong>Box Item Editor</strong> optimized for touch screens.</li>
+                                    <li><strong>Install as App</strong>: Tap 'Add to Home Screen' in Chrome on Android.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: Backups & Version Control -->
+            <section class="tab-panel" id="tab-backups">
+                <div class="panel-header-action">
+                    <div>
+                        <h2>Automated GFS Backups & Version Control</h2>
+                        <p class="text-muted">Grandfather-Father-Son rotation policy: Startup sessions, Daily (1PM/6PM), Weekly (Sat 6PM), and Monthly (1st 9AM).</p>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn btn-secondary" id="btn-refresh-backups">
+                            <i class="fa-solid fa-arrows-rotate"></i> Refresh History
+                        </button>
+                        <button class="btn btn-primary" id="btn-trigger-manual-backup">
+                            <i class="fa-solid fa-shield-heart"></i> Create Snapshot Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 GFS Tier Status Cards -->
+                <div class="backup-tiers-grid">
+                    <div class="backup-tier-card">
+                        <div class="tier-card-header">
+                            <div class="tier-title-group">
+                                <div class="tier-icon icon-session">
+                                    <i class="fa-solid fa-bolt"></i>
+                                </div>
+                                <div>
+                                    <div class="tier-name">Pre-Flight / Sessions</div>
+                                    <div class="tier-schedule">Pre-connection & Startup</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tier-stats">
+                            <div><strong id="stat-backup-sessions-count">0</strong> snapshots</div>
+                            <span class="tier-retention-tag">Keep last 30</span>
+                        </div>
+                        <div class="tier-last-time">Last: <span id="stat-backup-sessions-last">--</span></div>
+                    </div>
+
+                    <div class="backup-tier-card">
+                        <div class="tier-card-header">
+                            <div class="tier-title-group">
+                                <div class="tier-icon icon-daily">
+                                    <i class="fa-solid fa-sun"></i>
+                                </div>
+                                <div>
+                                    <div class="tier-name">Daily Backups (Son)</div>
+                                    <div class="tier-schedule">01:00 PM & 06:00 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tier-stats">
+                            <div><strong id="stat-backup-daily-count">0</strong> snapshots</div>
+                            <span class="tier-retention-tag">7-Day Rolling</span>
+                        </div>
+                        <div class="tier-last-time">Last: <span id="stat-backup-daily-last">--</span></div>
+                    </div>
+
+                    <div class="backup-tier-card">
+                        <div class="tier-card-header">
+                            <div class="tier-title-group">
+                                <div class="tier-icon icon-weekly">
+                                    <i class="fa-solid fa-calendar-week"></i>
+                                </div>
+                                <div>
+                                    <div class="tier-name">Weekly Backups (Father)</div>
+                                    <div class="tier-schedule">Saturday 06:00 PM</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tier-stats">
+                            <div><strong id="stat-backup-weekly-count">0</strong> snapshots</div>
+                            <span class="tier-retention-tag">8-Week Archive</span>
+                        </div>
+                        <div class="tier-last-time">Last: <span id="stat-backup-weekly-last">--</span></div>
+                    </div>
+
+                    <div class="backup-tier-card">
+                        <div class="tier-card-header">
+                            <div class="tier-title-group">
+                                <div class="tier-icon icon-monthly">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                </div>
+                                <div>
+                                    <div class="tier-name">Monthly Backups (Grandfather)</div>
+                                    <div class="tier-schedule">1st of Month 09:00 AM</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tier-stats">
+                            <div><strong id="stat-backup-monthly-count">0</strong> snapshots</div>
+                            <span class="tier-retention-tag">12-Month Archive</span>
+                        </div>
+                        <div class="tier-last-time">Last: <span id="stat-backup-monthly-last">--</span></div>
+                    </div>
+                </div>
+
+                <!-- Backups History Table -->
+                <div class="backups-table-container">
+                    <div class="backups-table-header">
+                        <h3 style="font-size:14px; font-weight:700; margin:0;"><i class="fa-solid fa-list-check"></i> Available Snapshots & Restore Points</h3>
+                        <span class="text-muted" style="font-size:12px;" id="backups-table-count">Loading backups...</span>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="backups-table">
+                            <thead>
+                                <tr>
+                                    <th>Snapshot File</th>
+                                    <th>Tier</th>
+                                    <th>Timestamp</th>
+                                    <th>Size</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="backups-table-body">
+                                <tr>
+                                    <td colspan="5" style="text-align:center; padding:20px; color:var(--text-muted);">Loading backup history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Mobile Bottom Navigation Bar (Android & Mobile view) -->
+        <nav class="bottom-nav">
+            <button class="bottom-nav-item active" data-tab="candidates">
+                <i class="fa-solid fa-address-book"></i>
+                <span>Candidates</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="reviews">
+                <i class="fa-solid fa-code-pull-request"></i>
+                <span>Reviews</span>
+                <span class="nav-dot" id="dot-pending-reviews" style="display:none;"></span>
+            </button>
+            <button class="bottom-nav-item" data-tab="reviewers">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>Reviewers</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="backups">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span>Backups</span>
+            </button>
+            <button class="bottom-nav-item" data-tab="mobile">
+                <i class="fa-solid fa-qrcode"></i>
+                <span>QR Connect</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MODAL 1: Candidate Box Item Form Editor -->
+    <div class="modal-overlay" id="modal-candidate-form" style="display:none;">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-id-card"></i>
+                    <h3 id="form-modal-title">Candidate Details (Box Items)</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-candidate-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="candidate-form">
+                    <input type="hidden" id="field-row-id" value="">
+
+                    <!-- Section 1: Candidate Identity & Sourcing -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-user-tag"></i> Identity & Portal Sourcing
+                    </div>
+                    <div class="box-grid box-grid-4">
+                        <div class="box-item box-span-desk-2">
+                            <label for="field-candidate-name"><i class="fa-solid fa-user"></i> Candidate Name / Role Title *</label>
+                            <input type="text" id="field-candidate-name" required placeholder="e.g. John Doe - AI Engineer">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-portal-source"><i class="fa-solid fa-earth-americas"></i> Portal Source</label>
+                            <input type="text" id="field-portal-source" placeholder="e.g. Naukri.com, Indeed, LinkedIn" list="portal-options">
+                            <datalist id="portal-options">
+                                <option value="Naukri.com">
+                                <option value="Indeed India">
+                                <option value="LinkedIn">
+                                <option value="Google / Web Search">
+                            </datalist>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-open-to-work"><i class="fa-solid fa-briefcase"></i> Open To Work / Active</label>
+                            <select id="field-open-to-work">
+                                <option value="Actively Looking">Actively Looking</option>
+                                <option value="Yes">Yes</option>
+                                <option value="Serving Notice">Serving Notice</option>
+                                <option value="Closed - Not Interested">Closed - Not Interested</option>
+                                <option value="Closed - Already Placed">Closed - Already Placed</option>
+                                <option value="Not Interested">Not Interested</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Contact & Quick Actions -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-address-card"></i> Contact & Location
+                    </div>
+                    <div class="box-grid box-grid-4">
+                        <div class="box-item">
+                            <label for="field-phone"><i class="fa-solid fa-phone"></i> Phone Number</label>
+                            <div class="input-with-actions">
+                                <input type="text" id="field-phone" placeholder="e.g. +91 98765 43210">
+                                <div class="quick-contact-btns">
+                                    <button type="button" class="action-btn call" id="btn-quick-call" title="Call directly">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </button>
+                                    <button type="button" class="action-btn whatsapp" id="btn-quick-wa" title="WhatsApp message">
+                                        <i class="fa-brands fa-whatsapp"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-email"><i class="fa-solid fa-envelope"></i> Email Address <span style="font-size:11px; color:var(--text-muted); font-weight:normal;">(Optional)</span></label>
+                            <div class="input-with-actions">
+                                <input type="text" id="field-email" placeholder="e.g. candidate@example.com (Optional)">
+                                <div class="quick-contact-btns">
+                                    <button type="button" class="action-btn email" id="btn-quick-email" title="Compose email">
+                                        <i class="fa-solid fa-envelope"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-location"><i class="fa-solid fa-location-dot"></i> Location (City / Area)</label>
+                            <input type="text" id="field-location" placeholder="e.g. Bengaluru, India">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-experience"><i class="fa-solid fa-briefcase"></i> Total Experience</label>
+                            <input type="text" id="field-experience" placeholder="e.g. 5 Years / Extracted from PDF">
+                        </div>
+                    </div>
+
+                    <!-- Section 2.5: Professional Profile, Audience Segmentation & Education -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-user-graduate"></i> Professional Profile & Audience Segmentation (P1/P2)
+                    </div>
+                    <div class="box-grid box-grid-3">
+                        <div class="box-item">
+                            <label for="field-current-role"><i class="fa-solid fa-user-tie"></i> Current Position / Role / Work</label>
+                            <input type="text" id="field-current-role" placeholder="e.g. Chief Manager / Retired Bank Manager">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-domain-industry"><i class="fa-solid fa-industry"></i> Domain / Industry / Work Category</label>
+                            <input type="text" id="field-domain-industry" placeholder="e.g. Banking / Public Sector / Defence / IT">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-education"><i class="fa-solid fa-graduation-cap"></i> Education Background</label>
+                            <input type="text" id="field-education" placeholder="e.g. B.Tech / MBA / B.Com">
+                        </div>
+                    </div>
+                    <div class="box-grid box-grid-3" style="margin-top: 8px;">
+                        <div class="box-item">
+                            <label for="field-age"><i class="fa-solid fa-cake-candles"></i> Age (Years)</label>
+                            <input type="number" id="field-age" min="18" max="100" placeholder="e.g. 55 (P1 is 51+)">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-employment-sector"><i class="fa-solid fa-building-columns"></i> Employment Sector</label>
+                            <select id="field-employment-sector">
+                                <option value="">— Select Sector —</option>
+                                <option value="Government">🏛️ Government (Central / State / Ministry)</option>
+                                <option value="Public Sector / PSU">🏢 Public Sector / PSU / Statutory Body</option>
+                                <option value="Defence / Armed Forces">🎖️ Defence / Armed Forces / Police</option>
+                                <option value="Banking / Insurance">🏦 Banking / Insurance / Financial</option>
+                                <option value="Private Sector">💼 Private Sector / Corporate</option>
+                                <option value="Other">🌐 Other / Independent</option>
+                                <option value="Unknown">❓ Unknown</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-retirement-status"><i class="fa-solid fa-user-clock"></i> Retirement Status</label>
+                            <select id="field-retirement-status">
+                                <option value="">— Select Status —</option>
+                                <option value="Retired">🏖️ Retired (Superannuated)</option>
+                                <option value="Voluntary Retirement (VRS)">📝 Voluntary Retirement (VRS)</option>
+                                <option value="Active / In-Service">💼 Active / In-Service</option>
+                                <option value="Other">🌐 Other</option>
+                                <option value="Unknown">❓ Unknown</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: File & System Records -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-folder-open"></i> System & File Records
+                    </div>
+                    <div class="box-grid box-grid-3">
+                        <div class="box-item">
+                            <label for="field-pdf-file"><i class="fa-solid fa-file-pdf"></i> PDF File Name</label>
+                            <input type="text" id="field-pdf-file" placeholder="e.g. Resume_Candidate.pdf">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-resume-file"><i class="fa-solid fa-file-lines"></i> Resume File Name</label>
+                            <input type="text" id="field-resume-file" placeholder="e.g. Profile_Details.docx">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-processed-timestamp"><i class="fa-solid fa-clock"></i> Processed Timestamp</label>
+                            <input type="text" id="field-processed-timestamp" placeholder="YYYY-MM-DD HH:MM:SS">
+                        </div>
+                    </div>
+
+                    <!-- Section 4: HR Calling & Remarks -->
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-headset"></i> HR Calling Status & Follow-up
+                    </div>
+                    <div class="box-grid box-grid-3">
+                        <div class="box-item">
+                            <label for="field-hr-called"><i class="fa-solid fa-phone-volume"></i> HR Called Status</label>
+                            <select id="field-hr-called">
+                                <option value="Yes">Yes (Called & Active)</option>
+                                <option value="Closed - Not Interested">Closed - Not Interested</option>
+                                <option value="Pending">Pending / Not Called</option>
+                                <option value="Busy / Call Later">Busy / Call Later</option>
+                                <option value="Not Reachable">Not Reachable / RNR</option>
+                                <option value="No">No</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-call-date" id="label-call-date"><i class="fa-solid fa-calendar-day"></i> Call Date <span id="call-date-required" style="color:#ef4444; font-weight:bold; display:none;">* (Mandatory)</span></label>
+                            <input type="date" id="field-call-date">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-followup-date"><i class="fa-solid fa-calendar-check"></i> Follow-up Date</label>
+                            <input type="date" id="field-followup-date">
+                        </div>
+                    </div>
+                    <div class="box-grid" style="margin-top: 6px;">
+                        <div class="box-item">
+                            <label for="field-hr-remarks"><i class="fa-solid fa-comment-dots"></i> HR Remarks</label>
+                            <textarea id="field-hr-remarks" rows="2" placeholder="Enter notes from call, discussion, candidate expectations..."></textarea>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-followup-remarks"><i class="fa-solid fa-comments"></i> HR Follow-up Remarks</label>
+                            <textarea id="field-followup-remarks" rows="2" placeholder="Notes for next follow-up action..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Escalation Matrix & Action Required -->
+                    <div class="form-section-title" style="color: #fbbf24; border-bottom: 2px solid rgba(245, 158, 11, 0.3);">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ⚡ Task Escalation & Action Assignment (L1 to L4)
+                    </div>
+                    <div class="box-grid" style="background: rgba(245, 158, 11, 0.04); border-radius: 8px; padding: 10px; border: 1px dashed rgba(245, 158, 11, 0.25);">
+                        <div class="box-item">
+                            <label for="field-escalation-level" style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-user-shield"></i> Task / Assigned To:</label>
+                            <select id="field-escalation-level" style="border-color: rgba(245, 158, 11, 0.4);">
+                                <option value="None / No Escalation">None / Unassigned</option>
+                                <option value="L1 - HR Person">L1 - HR Person (Recruiter / Sourcing Lead)</option>
+                                <option value="L2 - Raj">L2 - Raj (Lead Reviewer & Tech Sourcing)</option>
+                                <option value="L3 - Chaitali">L3 - Chaitali (Hiring Manager / Department Lead)</option>
+                                <option value="L4 - Matthew">L4 - Matthew (Executive Approver / Final Authority)</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-escalation-action" style="color: #fbbf24; font-weight: 600;"><i class="fa-solid fa-list-check"></i> Action Category (Standard)</label>
+                            <select id="field-escalation-action" style="border-color: rgba(245, 158, 11, 0.4);">
+                                <option value="None">None</option>
+                                <option value="Need to Talk">Need to Talk</option>
+                                <option value="Review / Suggest">Review / Suggest</option>
+                                <option value="Interview Decision">Interview Decision</option>
+                                <option value="Other / Custom Action">Other / Custom Action</option>
+                            </select>
+                        </div>
+                        <div class="box-item box-span-2">
+                            <label for="field-escalation-remarks" style="color: #fbbf24;"><i class="fa-solid fa-comment-medical"></i> Escalation Comments / Action Details</label>
+                            <textarea id="field-escalation-remarks" rows="2" placeholder="Enter specific questions, notes, or action required for the designated level..."></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Section 6A: Conversion Intelligence Tracking -->
+                    <div class="form-section-title" style="color: #34d399; border-color: rgba(52, 211, 153, 0.25); background: rgba(52, 211, 153, 0.07);">
+                        <i class="fa-solid fa-chart-line"></i> Conversion Intelligence
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-call-response" style="color: #34d399;"><i class="fa-solid fa-phone-volume"></i> Call Response</label>
+                            <select id="field-call-response">
+                                <option value="">— Not Set —</option>
+                                <option value="Positive">✅ Positive (Engaged / Open to Discussion)</option>
+                                <option value="Neutral">🔄 Neutral (Polite but Uncommitted)</option>
+                                <option value="Negative">❌ Negative (Not Interested / Declined)</option>
+                                <option value="No Response">📵 No Response (RNR / Busy)</option>
+                            </select>
+                        </div>
+                        <div class="box-item">
+                            <label for="field-interview-agreed" style="color: #34d399;"><i class="fa-solid fa-handshake"></i> Interview / Meeting Agreed</label>
+                            <select id="field-interview-agreed">
+                                <option value="">— Not Discussed —</option>
+                                <option value="Yes - In Person">🏢 Yes — In Person</option>
+                                <option value="Yes - Virtual">💻 Yes — Virtual / Online</option>
+                                <option value="Pending">⏳ Pending (Will Confirm)</option>
+                                <option value="Declined">🚫 Declined</option>
+                                <option value="Not Discussed">💬 Not Discussed</option>
+                            </select>
+                        </div>
+                        <div class="box-item box-span-2">
+                            <label for="field-advisory-interest" style="color: #34d399;"><i class="fa-solid fa-user-tie"></i> Advisory Role Interest</label>
+                            <select id="field-advisory-interest">
+                                <option value="">— Not Discussed —</option>
+                                <option value="Agreed">🌟 Agreed — Ready to Join Advisory</option>
+                                <option value="Interested - More Info Needed">🔍 Interested — Needs More Information</option>
+                                <option value="Declined">🚫 Declined</option>
+                                <option value="Not Discussed">💬 Not Discussed Yet</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section 7: Reviewer & Workflow Routing -->
+
+                    <div class="form-section-title">
+                        <i class="fa-solid fa-share-nodes"></i> Review / Staging Options
+                    </div>
+                    <div class="box-grid">
+                        <div class="box-item">
+                            <label for="field-submitter-name"><i class="fa-solid fa-user-pen"></i> Submitter Name</label>
+                            <input type="text" id="field-submitter-name" value="Raj">
+                        </div>
+                        <div class="box-item">
+                            <label for="field-assign-reviewer"><i class="fa-solid fa-user-check"></i> Assign Reviewer (Optional)</label>
+                            <select id="field-assign-reviewer">
+                                <option value="Direct Commit">None (Direct Save to Excel)</option>
+                                <!-- Dynamic reviewers options -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer" style="display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--border-color);">
+                        <!-- Tier 1: Utility & Guarded Danger Action -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; flex-wrap: wrap;">
+                            <div style="display: flex; gap: 8px;">
+                                <button type="button" class="btn btn-secondary" id="btn-cancel-candidate">Cancel</button>
+                                <button type="button" class="btn btn-accent" id="btn-share-candidate-modal">
+                                    <i class="fa-solid fa-share-nodes"></i> Share
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-danger-outline" id="btn-modal-quick-close" style="border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08); color: #f87171; font-size: 12px; padding: 7px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s;" title="Quick Close / Mark Candidate Not Interested">
+                                <i class="fa-solid fa-ban"></i> Close (Not Interested)
+                            </button>
+                        </div>
+
+                        <!-- Tier 2: Primary Constructive Actions (Clean Thumb Zone) -->
+                        <div style="display: flex; gap: 8px; width: 100%;">
+                            <button type="button" class="btn btn-outline" id="btn-stage-review" style="flex: 1;">
+                                <i class="fa-solid fa-code-pull-request"></i> Submit for Review
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="btn-save-candidate" style="flex: 1.4; font-weight: 600; font-size: 14px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save & Update Master Excel
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Share / Next Level Modal -->
+    <div class="modal-overlay" id="modal-share" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <h3>Share Candidate Details (Next Level)</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-share-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Formatted candidate brief ready for instant sharing via WhatsApp, Email, or Clipboard:</p>
+                <div class="share-preview-card" id="share-preview-text">
+                    <!-- Formatted text generated here -->
+                </div>
+                <div class="share-actions-grid">
+                    <button class="btn btn-whatsapp w-full" id="btn-share-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> Share on WhatsApp
+                    </button>
+                    <button class="btn btn-email w-full" id="btn-share-email">
+                        <i class="fa-solid fa-envelope"></i> Share via Email
+                    </button>
+                    <button class="btn btn-secondary w-full" id="btn-share-copy">
+                        <i class="fa-solid fa-copy"></i> Copy to Clipboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Add/Edit Reviewer Modal -->
+    <div class="modal-overlay" id="modal-reviewer-form" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <h3 id="reviewer-modal-title">Add Reviewer Contact</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-reviewer-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="reviewer-form">
+                    <div class="box-item">
+                        <label for="rev-name"><i class="fa-solid fa-user"></i> Full Name *</label>
+                        <input type="text" id="rev-name" required placeholder="e.g. Priya Sharma">
+                    </div>
+                    <div class="box-item">
+                        <label for="rev-phone"><i class="fa-solid fa-phone"></i> Phone Number *</label>
+                        <input type="text" id="rev-phone" required placeholder="e.g. +91 98765 43210">
+                    </div>
+                    <div class="box-item">
+                        <label for="rev-email"><i class="fa-solid fa-envelope"></i> Email Address *</label>
+                        <input type="email" id="rev-email" required placeholder="e.g. priya.sharma@example.com">
+                    </div>
+                    <div class="box-item">
+                        <label for="rev-role"><i class="fa-solid fa-shield-halved"></i> Role / Designation</label>
+                        <input type="text" id="rev-role" placeholder="e.g. Hiring Lead / Technical Manager" value="Reviewer">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-reviewer">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-check"></i> Save Reviewer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Import XLSX File Modal -->
+    <div class="modal-overlay" id="modal-import-excel" style="display:none;">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-header-title">
+                    <i class="fa-solid fa-file-import"></i>
+                    <h3>Import Excel (.xlsx) Candidates</h3>
+                </div>
+                <button class="modal-close-btn" id="btn-close-import-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">Select or drag & drop an Excel file to import and merge candidate records into your master tracker.</p>
+                
+                <div class="box-item">
+                    <label for="import-file-input"><i class="fa-solid fa-file-excel"></i> Choose .xlsx File *</label>
+                    <input type="file" id="import-file-input" accept=".xlsx, .xls" style="padding: 8px;">
+                </div>
+
+                <div class="box-item">
+                    <label><i class="fa-solid fa-sliders"></i> Import Mode</label>
+                    <select id="import-mode-select">
+                        <option value="append">Append (Add to existing master records)</option>
+                        <option value="replace">Replace All (Overwrite existing master records)</option>
+                    </select>
+                </div>
+
+                <div class="connection-tips" style="margin-top: 8px;">
+                    <h4><i class="fa-solid fa-circle-info"></i> Column Auto-Mapping:</h4>
+                    <p style="font-size: 11px; color: var(--text-secondary);">
+                        The importer automatically maps matching column headers such as Name, Phone, Email, Location, Total Experience, Portal Source, HR Called, and Remarks.
+                    </p>
+                </div>
+
+                <div class="modal-footer" style="padding: 12px 0 0 0;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-import">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="btn-submit-import">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload & Import Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: Double-Confirmation Security Modal for Candidate Closure -->
+    <div class="modal-overlay" id="modal-confirm-close" style="display:none; z-index: 1200;">
+        <div class="modal-card" style="max-width: 440px; border: 1px solid rgba(239, 68, 68, 0.4); box-shadow: 0 20px 40px rgba(0,0,0,0.6);">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.08);">
+                <div class="modal-header-title" style="color: #f87171;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <h3>Confirm Candidate Closure</h3>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-cancel-confirm-close-x">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 20px 16px;">
+                <p style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary);">
+                    Are you sure you want to mark <strong id="confirm-close-candidate-name" style="color: #60a5fa;">this candidate</strong> as <strong>Closed / Not Interested</strong>?
+                </p>
+                <div style="background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; padding: 10px 12px; border-radius: 4px; font-size: 13px; color: #fca5a5; margin-bottom: 18px;">
+                    <i class="fa-solid fa-circle-info"></i> This will immediately update the master Excel tracker and set status to <strong>"Closed - Not Interested"</strong>.
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-confirm-close" style="flex: 1; min-width: 120px;">
+                        <i class="fa-solid fa-arrow-left"></i> Keep Open
+                    </button>
+                    <button type="button" class="btn btn-danger" id="btn-confirm-close-execute" style="flex: 1.2; min-width: 140px; background: #dc2626; color: #fff; border: none;">
+                        <i class="fa-solid fa-ban"></i> Yes, Confirm Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: Privacy-Safe Candidate Drill-Down Modal (Zero PII Exposure) -->
+    <div class="modal-overlay" id="modal-analytics-drilldown" style="display:none; z-index: 1200;">
+        <div class="modal-card modal-lg" style="max-width: 900px; width: 95%;">
+            <div class="modal-header" style="background: rgba(99, 102, 241, 0.08); border-bottom: 1px solid rgba(99, 102, 241, 0.2);">
+                <div class="modal-header-title" style="color: var(--primary);">
+                    <i class="fa-solid fa-list-check"></i>
+                    <h3 id="drilldown-modal-title">Cohort Candidate Drill-Down</h3>
+                </div>
+                <button type="button" class="modal-close-btn" id="btn-close-drilldown-modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+                    <div style="font-size:13px; color:var(--text-muted);" id="drilldown-summary-text">
+                        Showing matching candidates for this cohort segment. PII (phone/email) is protected.
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="drilldown-search-input" placeholder="Search candidate in cohort..." style="background:rgba(0,0,0,0.2); border:1px solid var(--border-color); border-radius:6px; padding:6px 12px; font-size:12px; color:var(--text-primary); width:220px;">
+                    </div>
+                </div>
+                <div style="max-height: 480px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px;">
+                    <table class="analytics-drilldown-table" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.04); text-align: left; border-bottom: 1px solid var(--border-color);">
+                                <th style="padding: 10px 12px;">Candidate</th>
+                                <th style="padding: 10px 12px;">Segment</th>
+                                <th style="padding: 10px 12px;">Domain / Role</th>
+                                <th style="padding: 10px 12px;">Exp / Age</th>
+                                <th style="padding: 10px 12px;">Outreach Status</th>
+                                <th style="padding: 10px 12px; text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="drilldown-table-body">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 24px; color: var(--text-muted);">Loading cohort candidates...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="/static/js/app.js?v=20"></script>
+</body>
+</html>

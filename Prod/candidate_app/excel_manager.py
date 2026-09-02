@@ -13,6 +13,9 @@ TRACKER_HEADERS = [
     'Email',
     'Location',
     'Total Experience',
+    'Current Position / Role',
+    'Domain / Industry',
+    'Education Background',
     'Open To Work / Active',
     'Portal Source',
     'PDF File Name',
@@ -25,8 +28,59 @@ TRACKER_HEADERS = [
     'HR Follow-up Remarks',
     'Escalation Level / Person',
     'Escalation Action Category',
-    'Escalation Remarks'
+    'Escalation Remarks',
+    # Conversion Intelligence Tracking Columns (added for analytics)
+    'Call Response',
+    'Interview / Meeting Agreed',
+    'Advisory Role Interest',
+    # Audience Segmentation (P1/P2 Insurance Advisory)
+    'Age',
+    'Employment Sector',
+    'Retirement Status'
 ]
+
+
+# Canonical status classification logic shared across /api/stats and candidate filtering
+def is_candidate_closed(c: dict) -> bool:
+    hr = (c.get("HR Called") or "").lower()
+    otw = (c.get("Open To Work / Active") or "").lower()
+    return ("not interested" in hr or "closed" in hr or "not interested" in otw or "closed" in otw)
+
+def is_candidate_called(c: dict) -> bool:
+    hr = (c.get("HR Called") or "").lower()
+    return "yes" in hr and not is_candidate_closed(c)
+
+def is_candidate_busy(c: dict) -> bool:
+    hr = (c.get("HR Called") or "").lower()
+    return ("busy" in hr or "call later" in hr or "call back" in hr) and not is_candidate_closed(c)
+
+def is_candidate_not_reachable(c: dict) -> bool:
+    hr = (c.get("HR Called") or "").lower()
+    return ("not reachable" in hr or "rnr" in hr or "not connected" in hr) and not is_candidate_closed(c)
+
+def is_candidate_pending(c: dict) -> bool:
+    return (
+        not is_candidate_called(c)
+        and not is_candidate_closed(c)
+        and not is_candidate_busy(c)
+        and not is_candidate_not_reachable(c)
+    )
+
+def is_candidate_followup(c: dict) -> bool:
+    if is_candidate_closed(c):
+        return False
+    f_date = (c.get("Follow-up Date") or "").strip()
+    f_rem = (c.get("HR Follow-up Remarks") or "").strip().lower()
+    if f_date and f_date.lower() not in ["", "none", "n/a", "null"]:
+        return True
+    if f_rem and f_rem.lower() not in ["", "none", "n/a", "null", "not interested", "closed"]:
+        return True
+    return False
+
+def is_candidate_assigned(c: dict) -> bool:
+    esc = (c.get("Escalation Level / Person") or "").strip()
+    return bool(esc and esc.lower() not in ["", "none", "no escalation", "none / no escalation", "unassigned"])
+
 
 class ExcelManager:
     def __init__(self, file_path: str):
@@ -109,23 +163,24 @@ class ExcelManager:
                         continue
 
                 if filter_status and filter_status != "All":
-                    hr_called = row_data.get("HR Called", "").lower()
-                    open_to_work = row_data.get("Open To Work / Active", "").lower()
                     fs = filter_status.lower()
                     if fs == "called":
-                        if "yes" not in hr_called or "not interested" in hr_called:
+                        if not is_candidate_called(row_data):
                             continue
                     elif fs == "pending":
-                        if "yes" in hr_called or "not interested" in hr_called or "closed" in hr_called or "not interested" in open_to_work:
+                        if not is_candidate_pending(row_data):
                             continue
                     elif fs in ["closed", "not_interested", "not interested"]:
-                        if "not interested" not in hr_called and "closed" not in hr_called and "not interested" not in open_to_work and "closed" not in open_to_work:
+                        if not is_candidate_closed(row_data):
                             continue
                     elif fs in ["busy", "call_later"]:
-                        if "busy" not in hr_called and "call later" not in hr_called and "call back" not in hr_called:
+                        if not is_candidate_busy(row_data):
                             continue
                     elif fs in ["not_reachable", "rnr"]:
-                        if "not reachable" not in hr_called and "rnr" not in hr_called and "not connected" not in hr_called:
+                        if not is_candidate_not_reachable(row_data):
+                            continue
+                    elif fs in ["followups", "follow_ups", "follow-ups"]:
+                        if not is_candidate_followup(row_data):
                             continue
 
                 if filter_portal and filter_portal != "All":
@@ -134,11 +189,16 @@ class ExcelManager:
                         continue
 
                 if filter_escalation and filter_escalation != "All":
-                    esc = row_data.get("Escalation Level / Person", "").lower()
-                    if filter_escalation.lower() in ["none", "no escalation"]:
-                        if esc and esc not in ["none", "no escalation", ""]:
+                    esc = (row_data.get("Escalation Level / Person") or "").strip()
+                    esc_lower = esc.lower()
+                    fe_lower = filter_escalation.lower().strip()
+                    if fe_lower in ["none", "no escalation", "unassigned"]:
+                        if is_candidate_assigned(row_data):
                             continue
-                    elif filter_escalation.lower() not in esc:
+                    elif fe_lower in ["assigned", "escalated", "has_task", "all tasks", "action required"]:
+                        if not is_candidate_assigned(row_data):
+                            continue
+                    elif fe_lower not in esc_lower:
                         continue
 
                 candidates.append(row_data)
